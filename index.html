@@ -1367,6 +1367,15 @@ function sendWhatsApp() {
   const encoded = encodeURIComponent(msg);
   const url = `https://wa.me/${WA_NUMBER}?text=${encoded}`;
   window.open(url, "_blank");
+
+  // Limpiar carrito después de enviar
+  setTimeout(() => {
+    cart = [];
+    updateCartUI();
+    renderCartItems();
+    toggleCart();
+    showToast("✅ ¡Pedido enviado! El carrito fue limpiado.");
+  }, 800);
 }
 
 // ══════════════════════════════════════════════
