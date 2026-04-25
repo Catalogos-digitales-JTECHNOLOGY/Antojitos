@@ -753,6 +753,57 @@ body::before {
 
 .site-footer span { color: var(--orange); }
 
+/* ── MODO MESA ── */
+.mesa-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(244,99,30,0.12) 0%, rgba(212,168,83,0.08) 100%);
+  border: 1px solid rgba(244,99,30,0.25);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin: 20px 16px 0;
+  max-width: 1068px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mesa-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.mesa-info {}
+
+.mesa-label {
+  font-size: 10px;
+  color: var(--orange-light);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.mesa-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.mesa-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* En modo mesa ocultar botones de agregar y carrito */
+body.modo-mesa .cart-btn { display: none !important; }
+body.modo-mesa .btn-add { display: none !important; }
+body.modo-mesa .cart-overlay,
+body.modo-mesa .cart-drawer { display: none !important; }
+
 /* ── ANIMATIONS ── */
 @keyframes cartBounce {
   0% { transform: scale(1); }
@@ -803,8 +854,18 @@ body::before {
   </div>
 </header>
 
+<!-- BANNER MESA (se muestra solo en modo mesa) -->
+<div class="mesa-banner" id="mesaBanner" style="display:none">
+  <div class="mesa-icon">🪑</div>
+  <div class="mesa-info">
+    <div class="mesa-label">Estás en</div>
+    <div class="mesa-num" id="mesaNumLabel">Mesa —</div>
+    <div class="mesa-hint">Explora el menú y pide con tu mesero 😊</div>
+  </div>
+</div>
+
 <!-- HERO -->
-<section class="hero">
+<section class="hero" id="heroSection">
   <div class="hero-tag">✦ Hecho con amor ✦</div>
   <h1>Antojitos que te <em>enamoran</em></h1>
   <p>Selecciona tus platillos favoritos y haz tu pedido directamente por WhatsApp. ¡Así de fácil!</p>
@@ -868,7 +929,7 @@ body::before {
 // ══════════════════════════════════════════════
 // WHATSAPP NUMBER — Cambia este número
 // ══════════════════════════════════════════════
-const WA_NUMBER = "2224613215"; // ← Pon tu número aquí (código de país + número)
+const WA_NUMBER = "5221XXXXXXXX"; // ← Pon tu número aquí (código de país + número)
 
 // ══════════════════════════════════════════════
 // DATOS DEL MENÚ
@@ -1393,8 +1454,30 @@ function showToast(msg, isWarning = false) {
 }
 
 // ══════════════════════════════════════════════
+// MODO MESA — detección por URL ?mesa=N
+// ══════════════════════════════════════════════
+function initMesaMode() {
+  const params = new URLSearchParams(window.location.search);
+  const mesa = params.get("mesa");
+
+  if (mesa) {
+    document.body.classList.add("modo-mesa");
+
+    // Mostrar banner de mesa
+    document.getElementById("mesaBanner").style.display = "flex";
+    document.getElementById("mesaNumLabel").textContent = `Mesa ${mesa}`;
+
+    // Cambiar hero para modo catálogo
+    const hero = document.getElementById("heroSection");
+    hero.querySelector("p").textContent =
+      "Explora nuestro menú y dile a tu mesero qué se te antoja. ¡Todo hecho con amor!";
+  }
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+initMesaMode();
 renderSection("antojitos");
 </script>
 
