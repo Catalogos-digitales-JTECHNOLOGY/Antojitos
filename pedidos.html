@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Antojería — Panel de Pedidos 🍳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+:root {
+  --cream: #FAF6F0;
+  --dark: #141414;
+  --dark-2: #1E1E1E;
+  --dark-3: #282828;
+  --dark-4: #313131;
+  --orange: #F4631E;
+  --orange-light: #FF8C4B;
+  --orange-glow: rgba(244,99,30,0.15);
+  --green: #2ECC71;
+  --green-dark: #27AE60;
+  --green-glow: rgba(46,204,113,0.15);
+  --gold: #D4A853;
+  --gold-glow: rgba(212,168,83,0.15);
+  --red: #E74C3C;
+  --red-dark: #C0392B;
+  --red-glow: rgba(231,76,60,0.15);
+  --blue: #3498DB;
+  --blue-glow: rgba(52,152,219,0.15);
+  --text-main: #F0EBE3;
+  --text-muted: #888;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--text-main);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ── HEADER ── */
+.panel-header {
+  background: linear-gradient(135deg, #161616 0%, #1e1a10 100%);
+  border-bottom: 1px solid rgba(244,99,30,0.2);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.7);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 42px; height: 42px;
+  background: var(--orange);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 20px var(--orange-glow);
+  flex-shrink: 0;
+}
+
+.logo-text { line-height: 1; }
+.logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 900;
+  color: var(--text-main);
+}
+.logo-sub {
+  font-size: 10px; color: var(--orange);
+  letter-spacing: 3px; text-transform: uppercase; font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--green-glow);
+  border: 1px solid rgba(46,204,113,0.3);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+}
+
+.live-dot {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+.btn-back {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex; align-items: center; gap: 7px;
+  transition: var(--transition);
+}
+.btn-back:hover { color: var(--text-main); border-color: rgba(255,255,255,0.2); }
+
+.btn-refresh {
+  background: var(--orange);
+  border: none;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  transition: var(--transition);
+  box-shadow: 0 4px 14px rgba(244,99,30,0.35);
+}
+.btn-refresh:hover { background: var(--orange-light); transform: translateY(-1px); }
+.btn-refresh.spinning i { animation: spin 0.6s linear; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.stats-bar::-webkit-scrollbar { display: none; }
+
+.stat-card {
+  background: var(--dark-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.stat-icon {
+  font-size: 22px;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon.pending { background: var(--orange-glow); }
+.stat-icon.preparing { background: var(--blue-glow); }
+.stat-icon.completed { background: var(--green-glow); }
+.stat-icon.local { background: var(--gold-glow); }
+.stat-icon.online { background: rgba(37,211,102,0.12); }
+
+.stat-info { line-height: 1.2; }
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--text-main);
+}
+.stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8px 24px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── SECTION TITLES ── */
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .panel-grid { grid-template-columns: 1fr; }
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.col-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.col-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+}
+.col-badge.local { background: var(--gold-glow); color: var(--gold); border: 1px solid rgba(212,168,83,0.3); }
+.col-badge.online { background: rgba(37,211,102,0.12); color: #25D366; border: 1px solid rgba(37,211,102,0.3); }
+
+.orders-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 300px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  text-align: center;
+  background: var(--dark-2);
+  border: 1px dashed rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  animation: fadeIn 0.4s ease;
+}
+.empty-col .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-col p { font-size: 13px; line-height: 1.6; }
+
+/* ── ORDER CARD ── */
+.order-card {
+  background: var(--dark-2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: var(--transition);
+  animation: slideInCard 0.35s cubic-bezier(0.4,0,0.2,1) both;
+  position: relative;
+}
+
+@keyframes slideInCard {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.order-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* Status accent bar */
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: background 0.3s ease;
+}
+.order-card.status-pending::before { background: var(--orange); }
+.order-card.status-preparing::before { background: var(--blue); }
+.order-card.status-completed::before { background: var(--green); }
+
+.order-card.status-completed {
+  opacity: 0.6;
+  border-color: rgba(255,255,255,0.04);
+}
+
+/* Card header */
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.order-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-id {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.order-mesa {
+  background: var(--gold-glow);
+  color: var(--gold);
+  border: 1px solid rgba(212,168,83,0.25);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 5px;
+  transition: var(--transition);
+}
+.status-pill.pending { background: var(--orange-glow); color: var(--orange); border: 1px solid rgba(244,99,30,0.3); }
+.status-pill.preparing { background: var(--blue-glow); color: var(--blue); border: 1px solid rgba(52,152,219,0.3); }
+.status-pill.completed { background: var(--green-glow); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+
+/* Card time */
+.order-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Items list */
+.card-items {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.order-item-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-emoji { font-size: 16px; flex-shrink: 0; }
+
+.item-detail { flex: 1; min-width: 0; }
+
+.item-name {
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-extra {
+  font-size: 11px;
+  color: var(--orange-light);
+  margin-top: 1px;
+}
+
+.item-qty {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--dark-4);
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.item-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+/* Card footer */
+.card-footer {
+  padding: 10px 16px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-total {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-main);
+  display: flex; align-items: baseline; gap: 4px;
+}
+.order-total span { font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text-muted); font-weight: 400; }
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-action:active { transform: scale(0.95); }
+
+.btn-prepare {
+  background: var(--blue-glow);
+  color: var(--blue);
+  border: 1px solid rgba(52,152,219,0.25);
+}
+.btn-prepare:hover { background: rgba(52,152,219,0.25); border-color: var(--blue); }
+
+.btn-complete {
+  background: var(--green-glow);
+  color: var(--green);
+  border: 1px solid rgba(46,204,113,0.25);
+}
+.btn-complete:hover { background: rgba(46,204,113,0.25); border-color: var(--green); }
+
+.btn-delete {
+  background: var(--red-glow);
+  color: var(--red);
+  border: 1px solid rgba(231,76,60,0.2);
+  padding: 8px 10px;
+}
+.btn-delete:hover { background: rgba(231,76,60,0.25); border-color: var(--red); }
+
+/* ── TOAST ── */
+.toast-notif {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--dark-2);
+  border: 1px solid rgba(244,99,30,0.3);
+  border-left: 4px solid var(--orange);
+  color: var(--text-main);
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 10px;
+}
+.toast-notif.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── DEMO BANNER ── */
+.demo-banner {
+  background: linear-gradient(135deg, rgba(212,168,83,0.1) 0%, rgba(244,99,30,0.06) 100%);
+  border: 1px solid rgba(212,168,83,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  margin: 0 24px 16px;
+  max-width: calc(1400px - 48px);
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── FILTER TABS ── */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.filter-pill {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.filter-pill:hover { border-color: var(--orange); color: var(--orange-light); }
+.filter-pill.active { background: var(--orange); border-color: var(--orange); color: white; }
+
+/* ── AUDIO TOGGLE ── */
+.sound-toggle {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  font-size: 13px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.sound-toggle:hover { color: var(--text-main); }
+.sound-toggle.on { color: var(--gold); border-color: rgba(212,168,83,0.3); }
+
+/* ── DELETE ANIMATION ── */
+.order-card.removing {
+  animation: removeCard 0.35s ease forwards;
+}
+@keyframes removeCard {
+  from { opacity: 1; transform: scale(1); max-height: 500px; }
+  to { opacity: 0; transform: scale(0.95); max-height: 0; margin-top: 0; padding: 0; }
+}
+
+@media (max-width: 600px) {
+  .header-inner { padding: 12px 16px; }
+  .stats-bar { padding: 12px 16px; }
+  .main-content { padding: 8px 16px 60px; }
+  .demo-banner { margin: 0 16px 14px; }
+  .card-footer { flex-direction: column; align-items: flex-start; }
+  .action-btns { width: 100%; }
+  .btn-action { flex: 1; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="panel-header">
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <div class="logo-icon">🍳</div>
+      <div class="logo-text">
+        <div class="logo-name">La Antojería</div>
+        <div class="logo-sub">Panel de Cocina</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        En Vivo
+      </div>
+      <button class="sound-toggle" id="soundToggle" title="Notificación de sonido" onclick="toggleSound()">
+        <i class="bi bi-bell-fill"></i>
+      </button>
+      <button class="btn-refresh" id="btnRefresh" onclick="refreshOrders()">
+        <i class="bi bi-arrow-clockwise" id="refreshIcon"></i>
+        Actualizar
+      </button>
+      <a href="index.html" class="btn-back">
+        <i class="bi bi-arrow-left"></i>
+        Menú
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-card">
+    <div class="stat-icon pending">🕐</div>
+    <div class="stat-info">
+      <div class="stat-num" id="statPending">0</div>
+      <div class="stat-lbl">Pendientes</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon preparing">🔥</div>
+    <div class="stat-info">
+      <div class="stat-num" id="statPreparing">0</div>
+      <div class="stat-lbl">En cocina</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon completed">✅</div>
+    <div class="stat-info">
+      <div class="stat-num" id="statCompleted">0</div>
+      <div class="stat-lbl">Completados</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon local">🪑</div>
+    <div class="stat-info">
+      <div class="stat-num" id="statLocal">0</div>
+      <div class="stat-lbl">Del local</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon online">📱</div>
+    <div class="stat-info">
+      <div class="stat-num" id="statOnline">0</div>
+      <div class="stat-lbl">En línea</div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO NOTICE -->
+<div class="demo-banner" id="demoBanner">
+  💡 <strong>Tip:</strong> Los pedidos del carrito (WhatsApp) y pedidos de mesa aparecen aquí automáticamente. Esta página se actualiza sola cada 15 segundos.
+</div>
+
+<!-- MAIN -->
+<main class="main-content">
+  <div class="panel-grid">
+    <!-- COLUMNA LOCAL -->
+    <section>
+      <div class="col-header">
+        <div class="col-title">
+          🪑 Pedidos del Local
+          <span class="col-badge local" id="badgeLocal">0</span>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-pill active" data-filter="all" data-col="local" onclick="setFilter('local','all',this)">Todos</button>
+          <button class="filter-pill" data-filter="pending" data-col="local" onclick="setFilter('local','pending',this)">Pendientes</button>
+          <button class="filter-pill" data-filter="preparing" data-col="local" onclick="setFilter('local','preparing',this)">Cocina</button>
+        </div>
+      </div>
+      <div class="orders-col" id="colLocal">
+        <!-- filled by JS -->
+      </div>
+    </section>
+
+    <!-- COLUMNA ONLINE -->
+    <section>
+      <div class="col-header">
+        <div class="col-title">
+          📱 Pedidos en Línea
+          <span class="col-badge online" id="badgeOnline">0</span>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-pill active" data-filter="all" data-col="online" onclick="setFilter('online','all',this)">Todos</button>
+          <button class="filter-pill" data-filter="pending" data-col="online" onclick="setFilter('online','pending',this)">Pendientes</button>
+          <button class="filter-pill" data-filter="preparing" data-col="online" onclick="setFilter('online','preparing',this)">Cocina</button>
+        </div>
+      </div>
+      <div class="orders-col" id="colOnline">
+        <!-- filled by JS -->
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div class="toast-notif" id="toastNotif">
+  <span id="toastMsg">✅ Actualizado</span>
+</div>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let filters = { local: "all", online: "all" };
+let soundOn = false;
+let autoRefreshTimer;
+let prevOrderCount = 0;
+
+// ══════════════════════════════
+// SHEETDB CONFIG
+// ══════════════════════════════
+const SHEETDB_URL = "https://sheetdb.io/api/v1/km43dvj534708";
+const SHEET_NAME  = "Hoja 4";   // nombre con espacio — SheetDB lo codifica automáticamente
+
+// Cache local para no perder datos entre renders síncronos
+let ordersCache = [];
+
+// ── Parsear una fila de SheetDB → objeto de pedido interno ──
+function parseRow(row) {
+  let items = [];
+  try { items = JSON.parse(row.items || "[]"); } catch(e) {}
+  return {
+    id:        row.id        || "",
+    type:      row.type      || "local",
+    mesa:      row.mesa      || null,
+    items:     items,
+    total:     Number(row.total) || 0,
+    timestamp: Number(row.timestamp) || Date.now(),
+    status:    row.status    || "pending"
+  };
+}
+
+// ── Leer todos los pedidos desde SheetDB ──
+async function fetchOrders() {
+  try {
+    const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    ordersCache = (Array.isArray(rows) ? rows : []).map(parseRow);
+  } catch(e) {
+    console.warn("SheetDB fetch error:", e);
+    // Mantenemos el cache anterior si falla
+  }
+  return ordersCache;
+}
+
+// ── Guardar un pedido nuevo en SheetDB ──
+async function saveOrderRemote(order) {
+  const row = {
+    id:        order.id,
+    type:      order.type,
+    mesa:      order.mesa || "",
+    items:     JSON.stringify(order.items),
+    total:     order.total,
+    timestamp: order.timestamp,
+    status:    order.status
+  };
+  try {
+    await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: row })
+    });
+  } catch(e) { console.warn("SheetDB save error:", e); }
+}
+
+// ── Actualizar status de un pedido en SheetDB ──
+async function updateOrderStatus(id, status) {
+  // Actualizar cache local inmediatamente (UX rápida)
+  const idx = ordersCache.findIndex(o => o.id === id);
+  if (idx !== -1) ordersCache[idx].status = status;
+
+  try {
+    await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(id)}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: { status } })
+    });
+  } catch(e) { console.warn("SheetDB update error:", e); }
+}
+
+// ── Eliminar un pedido en SheetDB ──
+async function deleteOrder(id) {
+  ordersCache = ordersCache.filter(o => o.id !== id);
+  try {
+    await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(id)}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
+      method: "DELETE"
+    });
+  } catch(e) { console.warn("SheetDB delete error:", e); }
+}
+
+// ── Compatibilidad: getOrders() devuelve el cache síncrono ──
+function getOrders() { return ordersCache; }
+
+// ══════════════════════════════
+// TIME HELPERS
+// ══════════════════════════════
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return `hace ${diff}s`;
+  if (diff < 3600) return `hace ${Math.floor(diff/60)}m`;
+  return `hace ${Math.floor(diff/3600)}h`;
+}
+
+// ══════════════════════════════
+// RENDER
+// ══════════════════════════════
+async function render() {
+  await fetchOrders();
+  const orders = getOrders();
+
+  // Stats
+  const pending = orders.filter(o => o.status === "pending").length;
+  const preparing = orders.filter(o => o.status === "preparing").length;
+  const completed = orders.filter(o => o.status === "completed").length;
+  const local = orders.filter(o => o.type === "local").length;
+  const online = orders.filter(o => o.type === "whatsapp").length;
+
+  document.getElementById("statPending").textContent = pending;
+  document.getElementById("statPreparing").textContent = preparing;
+  document.getElementById("statCompleted").textContent = completed;
+  document.getElementById("statLocal").textContent = local;
+  document.getElementById("statOnline").textContent = online;
+
+  // Active counts (non-completed)
+  const localActive = orders.filter(o => o.type === "local" && o.status !== "completed").length;
+  const onlineActive = orders.filter(o => o.type === "whatsapp" && o.status !== "completed").length;
+  document.getElementById("badgeLocal").textContent = localActive;
+  document.getElementById("badgeOnline").textContent = onlineActive;
+
+  // Filter & render each column
+  renderCol("colLocal", orders.filter(o => o.type === "local"), filters.local);
+  renderCol("colOnline", orders.filter(o => o.type === "whatsapp"), filters.online);
+
+  // New order sound notification
+  const total = orders.length;
+  if (total > prevOrderCount && prevOrderCount > 0) {
+    if (soundOn) playBeep();
+    showToast(`🆕 Nuevo pedido recibido`);
+  }
+  prevOrderCount = total;
+}
+
+function renderCol(colId, orders, filter) {
+  const col = document.getElementById(colId);
+  const filtered = filter === "all" ? orders : orders.filter(o => o.status === filter);
+
+  // Sort: pending first, then preparing, then completed; newer first within group
+  filtered.sort((a, b) => {
+    const rank = { pending: 0, preparing: 1, completed: 2 };
+    const r = rank[a.status] - rank[b.status];
+    if (r !== 0) return r;
+    return b.timestamp - a.timestamp;
+  });
+
+  if (filtered.length === 0) {
+    col.innerHTML = `
+      <div class="empty-col">
+        <div class="empty-icon">${colId === "colLocal" ? "🪑" : "📱"}</div>
+        <p>${filter === "all" ? "Aún no hay pedidos en esta sección." : "No hay pedidos con este estado."}<br>
+        <small style="color:#666;font-size:11px">Se actualiza cada 15 segundos</small></p>
+      </div>`;
+    return;
+  }
+
+  col.innerHTML = "";
+  filtered.forEach((order, i) => {
+    const card = buildCard(order, i);
+    col.appendChild(card);
+  });
+}
+
+function buildCard(order, delay) {
+  const div = document.createElement("div");
+  div.className = `order-card status-${order.status}`;
+  div.style.animationDelay = `${delay * 0.06}s`;
+  div.id = `card-${order.id}`;
+
+  const shortId = order.id.slice(-6);
+  const mesaTag = order.mesa ? `<span class="order-mesa">Mesa ${order.mesa}</span>` : "";
+  const statusLabel = { pending: "Pendiente", preparing: "En cocina", completed: "Completado" };
+  const statusIcon = { pending: "⏳", preparing: "🔥", completed: "✅" };
+
+  const itemsHTML = order.items.map(item => `
+    <div class="order-item">
+      <div class="order-item-left">
+        <span class="item-emoji">${item.emoji || "🍽️"}</span>
+        <div class="item-detail">
+          <div class="item-name">${item.name}</div>
+          ${item.extraLabel ? `<div class="item-extra">+ ${item.extraLabel}</div>` : ""}
+        </div>
+      </div>
+      <span class="item-qty">×${item.qty}</span>
+      <span class="item-price">$${item.price * item.qty}</span>
+    </div>
+  `).join("");
+
+  // Action buttons based on status
+  let actionBtns = "";
+  if (order.status === "pending") {
+    actionBtns = `
+      <button class="btn-action btn-prepare" onclick="changeStatus('${order.id}','preparing')">
+        <i class="bi bi-fire"></i> Cocinar
+      </button>
+      <button class="btn-action btn-complete" onclick="changeStatus('${order.id}','completed')">
+        <i class="bi bi-check-lg"></i> Listo
+      </button>`;
+  } else if (order.status === "preparing") {
+    actionBtns = `
+      <button class="btn-action btn-complete" onclick="changeStatus('${order.id}','completed')">
+        <i class="bi bi-check-lg"></i> Completado
+      </button>`;
+  } else {
+    actionBtns = `<span style="font-size:12px;color:var(--green);display:flex;align-items:center;gap:5px"><i class="bi bi-check-circle-fill"></i> Entregado</span>`;
+  }
+
+  div.innerHTML = `
+    <div class="card-top">
+      <div class="order-meta">
+        <div class="order-id">#${shortId}</div>
+        ${mesaTag}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="order-time"><i class="bi bi-clock"></i> ${timeAgo(order.timestamp)}</div>
+        <div class="status-pill ${order.status}">${statusIcon[order.status]} ${statusLabel[order.status]}</div>
+      </div>
+    </div>
+    <div class="card-items">${itemsHTML}</div>
+    <div class="card-footer">
+      <div class="order-total">$${order.total} <span>MXN</span></div>
+      <div class="action-btns">
+        ${actionBtns}
+        <button class="btn-action btn-delete" onclick="removeOrder('${order.id}')" title="Eliminar">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+  return div;
+}
+
+// ══════════════════════════════
+// ACTIONS
+// ══════════════════════════════
+async function changeStatus(id, status) {
+  await updateOrderStatus(id, status);
+  render();
+  const msgs = { preparing: "🔥 ¡En cocina!", completed: "✅ Pedido completado" };
+  showToast(msgs[status] || "Actualizado");
+}
+
+function removeOrder(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    card.classList.add("removing");
+    setTimeout(async () => {
+      await deleteOrder(id);
+      render();
+    }, 330);
+  }
+}
+
+// ══════════════════════════════
+// FILTERS
+// ══════════════════════════════
+function setFilter(col, filter, btn) {
+  filters[col] = filter;
+  document.querySelectorAll(`[data-col="${col}"]`).forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+// ══════════════════════════════
+// REFRESH
+// ══════════════════════════════
+async function refreshOrders() {
+  const btn = document.getElementById("btnRefresh");
+  const icon = document.getElementById("refreshIcon");
+  btn.classList.add("spinning");
+  icon.style.animation = "spin 0.6s linear";
+  await render();
+  setTimeout(() => {
+    icon.style.animation = "";
+    btn.classList.remove("spinning");
+  }, 600);
+  showToast("🔄 Actualizado");
+}
+
+// ══════════════════════════════
+// SOUND
+// ══════════════════════════════
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.getElementById("soundToggle");
+  btn.classList.toggle("on", soundOn);
+  btn.title = soundOn ? "Sonido activado" : "Sonido desactivado";
+  showToast(soundOn ? "🔔 Notificaciones activadas" : "🔕 Notificaciones desactivadas");
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+// ══════════════════════════════
+// TOAST
+// ══════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById("toastNotif");
+  document.getElementById("toastMsg").textContent = msg;
+  clearTimeout(toastTimer);
+  toast.classList.add("show");
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+// (demo data removed — pedidos vienen de Google Sheets)
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+(async () => {
+  showToast("⏳ Conectando con Google Sheets…");
+  await render();
+})();
+
+// Auto-refresh cada 15 segundos
+autoRefreshTimer = setInterval(() => { render(); }, 15000);
+
+// Actualizar tiempos cada 60 segundos
+setInterval(() => { render(); }, 60000);
+</script>
+</body>
+</html>
