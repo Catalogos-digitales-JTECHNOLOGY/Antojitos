@@ -376,6 +376,35 @@ body::before {
 .status-pill.completed { background: var(--green-glow); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
 /* Card time */
+.order-client {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px 2px;
+}
+
+.order-nombre, .order-tel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.order-nombre {
+  background: rgba(244,99,30,0.12);
+  color: var(--orange-light);
+  border: 1px solid rgba(244,99,30,0.25);
+}
+
+.order-tel {
+  background: rgba(46,204,113,0.1);
+  color: #2ecc71;
+  border: 1px solid rgba(46,204,113,0.25);
+}
+
 .order-time {
   font-size: 11px;
   color: var(--text-muted);
@@ -739,22 +768,25 @@ let autoRefreshTimer;
 let prevOrderCount = 0;
 
 // ══════════════════════════════
-// SHEETDB CONFIG
+// BASEROW CONFIG
 // ══════════════════════════════
-const SHEETDB_URL = "https://sheetdb.io/api/v1/km43dvj534708";
-const SHEET_NAME  = "Hoja 4";   // nombre con espacio — SheetDB lo codifica automáticamente
+const BASEROW_URL   = "https://api.baserow.io/api/database/rows/table/982867";
+const BASEROW_TOKEN = "LkXbfc4EC1H8aei7ng5C3h6GdnDiKbEZesa";
 
 // Cache local para no perder datos entre renders síncronos
 let ordersCache = [];
 
-// ── Parsear una fila de SheetDB → objeto de pedido interno ──
+// ── Parsear una fila de Baserow → objeto de pedido interno ──
 function parseRow(row) {
   let items = [];
   try { items = JSON.parse(row.items || "[]"); } catch(e) {}
   return {
-    id:        row.id        || "",
+    id:        row.order_id  || String(row.id),  // nuestro ID personalizado
+    rowId:     row.id,                           // ID interno de Baserow (para PATCH/DELETE)
     type:      row.type      || "local",
     mesa:      row.mesa      || null,
+    nombre:    row.nombre    || "",
+    telefono:  row.telefono  || "",
     items:     items,
     total:     Number(row.total) || 0,
     timestamp: Number(row.timestamp) || Date.now(),
@@ -762,63 +794,52 @@ function parseRow(row) {
   };
 }
 
-// ── Leer todos los pedidos desde SheetDB ──
+// ── Leer todos los pedidos desde Baserow ──
 async function fetchOrders() {
   try {
-    const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`);
+    const res = await fetch(`${BASEROW_URL}/?user_field_names=true&size=200`, {
+      headers: { "Authorization": `Token ${BASEROW_TOKEN}` }
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = await res.json();
-    ordersCache = (Array.isArray(rows) ? rows : []).map(parseRow);
+    const data = await res.json();
+    ordersCache = (data.results || []).map(parseRow);
   } catch(e) {
-    console.warn("SheetDB fetch error:", e);
+    console.warn("Baserow fetch error:", e);
     // Mantenemos el cache anterior si falla
   }
   return ordersCache;
 }
 
-// ── Guardar un pedido nuevo en SheetDB ──
-async function saveOrderRemote(order) {
-  const row = {
-    id:        order.id,
-    type:      order.type,
-    mesa:      order.mesa || "",
-    items:     JSON.stringify(order.items),
-    total:     order.total,
-    timestamp: order.timestamp,
-    status:    order.status
-  };
-  try {
-    await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: row })
-    });
-  } catch(e) { console.warn("SheetDB save error:", e); }
-}
-
-// ── Actualizar status de un pedido en SheetDB ──
+// ── Actualizar status de un pedido en Baserow ──
 async function updateOrderStatus(id, status) {
   // Actualizar cache local inmediatamente (UX rápida)
-  const idx = ordersCache.findIndex(o => o.id === id);
-  if (idx !== -1) ordersCache[idx].status = status;
+  const order = ordersCache.find(o => o.id === id);
+  if (!order) return;
+  order.status = status;
 
   try {
-    await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(id)}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
+    await fetch(`${BASEROW_URL}/${order.rowId}/?user_field_names=true`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: { status } })
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Token ${BASEROW_TOKEN}`
+      },
+      body: JSON.stringify({ status })
     });
-  } catch(e) { console.warn("SheetDB update error:", e); }
+  } catch(e) { console.warn("Baserow update error:", e); }
 }
 
-// ── Eliminar un pedido en SheetDB ──
+// ── Eliminar un pedido en Baserow ──
 async function deleteOrder(id) {
+  const order = ordersCache.find(o => o.id === id);
   ordersCache = ordersCache.filter(o => o.id !== id);
+  if (!order) return;
   try {
-    await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(id)}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
-      method: "DELETE"
+    await fetch(`${BASEROW_URL}/${order.rowId}/`, {
+      method: "DELETE",
+      headers: { "Authorization": `Token ${BASEROW_TOKEN}` }
     });
-  } catch(e) { console.warn("SheetDB delete error:", e); }
+  } catch(e) { console.warn("Baserow delete error:", e); }
 }
 
 // ── Compatibilidad: getOrders() devuelve el cache síncrono ──
@@ -867,8 +888,9 @@ async function render() {
   // New order sound notification
   const total = orders.length;
   if (total > prevOrderCount && prevOrderCount > 0) {
+    const nuevos = total - prevOrderCount;
     if (soundOn) playBeep();
-    showToast(`🆕 Nuevo pedido recibido`);
+    showToast(`🔔 ${nuevos === 1 ? "¡Nuevo pedido!" : `¡${nuevos} pedidos nuevos!`}`);
   }
   prevOrderCount = total;
 }
@@ -909,7 +931,9 @@ function buildCard(order, delay) {
   div.id = `card-${order.id}`;
 
   const shortId = order.id.slice(-6);
-  const mesaTag = order.mesa ? `<span class="order-mesa">Mesa ${order.mesa}</span>` : "";
+  const mesaTag    = order.mesa    ? `<span class="order-mesa">🪑 Mesa ${order.mesa}</span>` : "";
+  const nombreTag  = order.nombre   ? `<span class="order-nombre"><i class="bi bi-person-fill"></i> ${order.nombre}</span>` : "";
+  const telTag     = order.telefono ? `<span class="order-tel"><i class="bi bi-telephone-fill"></i> ${order.telefono}</span>` : "";
   const statusLabel = { pending: "Pendiente", preparing: "En cocina", completed: "Completado" };
   const statusIcon = { pending: "⏳", preparing: "🔥", completed: "✅" };
 
@@ -957,6 +981,7 @@ function buildCard(order, delay) {
         <div class="status-pill ${order.status}">${statusIcon[order.status]} ${statusLabel[order.status]}</div>
       </div>
     </div>
+    ${(nombreTag || telTag) ? `<div class="order-client">${nombreTag}${telTag}</div>` : ""}
     <div class="card-items">${itemsHTML}</div>
     <div class="card-footer">
       <div class="order-total">$${order.total} <span>MXN</span></div>
@@ -1033,16 +1058,27 @@ function toggleSound() {
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.4);
+
+    // Ding doble tipo notificación (dos golpes rápidos, tono alto y limpio)
+    [0.0, 0.18].forEach(time => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1400, ctx.currentTime + time);
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + time + 0.12);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime + time);
+      gain.gain.linearRampToValueAtTime(0.32, ctx.currentTime + time + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.22);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + 0.25);
+    });
+
+    setTimeout(() => ctx.close(), 1000);
   } catch(e) {}
 }
 
@@ -1064,7 +1100,7 @@ function showToast(msg) {
 // INIT
 // ══════════════════════════════
 (async () => {
-  showToast("⏳ Conectando con Google Sheets…");
+  showToast("⏳ Conectando con Baserow…");
   await render();
 })();
 
