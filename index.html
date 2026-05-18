@@ -887,6 +887,55 @@ body.modo-mesa .cart-drawer { display: none !important; }
 </head>
 <body>
 
+<!-- ══════════════════════════════════════
+     PANTALLA DE BIENVENIDA
+══════════════════════════════════════ -->
+<div id="welcomeScreen" style="position:fixed;inset:0;z-index:5000;background:#1A1A1A;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div id="welcomeCard" style="background:#252525;border:1px solid rgba(244,99,30,.22);border-radius:26px;padding:36px 28px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <div style="width:62px;height:62px;background:#F4631E;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px;box-shadow:0 0 28px rgba(244,99,30,.4)">🌮</div>
+    <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:6px">La <em style="font-style:italic;color:#F4631E">Antojería</em></div>
+    <p style="font-size:13px;color:#9A8F84;margin-bottom:30px;line-height:1.65">¡Bienvenido! ¿Cómo vas a realizar tu pedido?</p>
+
+    <!-- OPCIÓN LOCAL -->
+    <div id="modeLocal" style="display:none">
+      <p style="font-size:10px;color:#FF8C4B;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:12px;text-align:left">👤 ¿Cuál es tu nombre?</p>
+      <input id="inputNombre" type="text" maxlength="40" placeholder="Escribe tu nombre *"
+        style="width:100%;background:#2E2E2E;border:1.5px solid rgba(255,255,255,.09);border-radius:12px;color:#F0EBE3;font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 15px;margin-bottom:16px;outline:none;transition:border-color .25s"
+        oninput="document.getElementById('btnNombre').disabled=this.value.trim().length<2"
+        onfocus="this.style.borderColor='#F4631E'" onblur="this.style.borderColor='rgba(255,255,255,.09)'">
+
+      <p style="font-size:10px;color:#FF8C4B;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:12px;text-align:left">🪑 ¿En cuál mesa estás?</p>
+      <div id="mesasGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px"></div>
+      <div style="display:flex;align-items:center;gap:10px;color:#9A8F84;font-size:11px;margin-bottom:14px"><span style="flex:1;height:1px;background:rgba(255,255,255,.07)"></span>o escribe el número<span style="flex:1;height:1px;background:rgba(255,255,255,.07)"></span></div>
+      <input id="mesaInput" type="number" min="1" max="99" placeholder="Ej. 5"
+        style="width:100%;background:#2E2E2E;border:1.5px solid rgba(255,255,255,.09);border-radius:12px;color:#F0EBE3;font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 15px;margin-bottom:20px;outline:none;transition:border-color .25s"
+        oninput="onMesaInput(this.value)"
+        onfocus="this.style.borderColor='#F4631E'" onblur="this.style.borderColor='rgba(255,255,255,.09)'">
+
+      <button id="btnNombre" onclick="entrarLocal()" disabled
+        style="width:100%;background:#F4631E;border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;padding:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 22px rgba(244,99,30,.35);opacity:.42;transition:all .28s">
+        <i class="bi bi-bell-fill"></i> Pedir en Mesa
+      </button>
+      <button onclick="backToModes()" style="width:100%;background:transparent;border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#9A8F84;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px;cursor:pointer;margin-top:10px;transition:all .25s" onmouseover="this.style.borderColor='#FF8C4B';this.style.color='#FF8C4B'" onmouseout="this.style.borderColor='rgba(255,255,255,.1)';this.style.color='#9A8F84'">← Volver</button>
+    </div>
+
+    <!-- OPCIONES INICIALES -->
+    <div id="modePicker">
+      <button onclick="showLocal()"
+        style="width:100%;background:linear-gradient(135deg,#F4631E,#e5551a);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 22px rgba(244,99,30,.35);margin-bottom:12px;transition:all .28s"
+        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        🪑 Estoy en el local
+      </button>
+      <button onclick="entrarWhatsApp()"
+        style="width:100%;background:#25D366;border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 22px rgba(37,211,102,.3);transition:all .28s"
+        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Pedir por WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="site-header">
   <div class="header-inner">
@@ -896,6 +945,9 @@ body.modo-mesa .cart-drawer { display: none !important; }
         <div class="logo-name">La Antojería</div>
         <div class="logo-sub">Menú Digital</div>
       </div>
+    </div>
+    <div id="infoPill" style="display:none;background:rgba(212,168,83,.14);border:1px solid rgba(212,168,83,.28);color:#D4A853;font-size:12px;font-weight:700;padding:6px 13px;border-radius:50px;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px" onclick="document.getElementById('welcomeScreen').style.display='flex'">
+      🪑
     </div>
     <button class="cart-btn" onclick="toggleCart()">
       <i class="bi bi-bag2-fill"></i>
@@ -984,7 +1036,7 @@ body.modo-mesa .cart-drawer { display: none !important; }
 // ══════════════════════════════════════════════
 // WHATSAPP NUMBER — Cambia este número
 // ══════════════════════════════════════════════
-const WA_NUMBER = "+522224613215"; // ← Pon tu número aquí (código de país + número)
+const WA_NUMBER = "5221XXXXXXXX"; // ← Pon tu número aquí (código de país + número)
 
 // ══════════════════════════════════════════════
 // DATOS DEL MENÚ
@@ -1458,29 +1510,134 @@ function toggleCart() {
 }
 
 // ══════════════════════════════════════════════
-// SHEETDB CONFIG
+// CONFIG
 // ══════════════════════════════════════════════
-const SHEETDB_URL  = "https://sheetdb.io/api/v1/km43dvj534708";
-const SHEET_NAME   = "Hoja 4";
+const BASEROW_URL   = "https://api.baserow.io/api/database/rows/table/982867";
+const BASEROW_TOKEN = "LkXbfc4EC1H8aei7ng5C3h6GdnDiKbEZesa";
+const TOTAL_MESAS  = 12; // ← ajusta según tu local
+let mesaActual     = null;
+let nombreCliente  = "";
+let modoActual     = ""; // "local" o "whatsapp"
 
+// ── Welcome screen ──
+function showLocal() {
+  document.getElementById("modePicker").style.display = "none";
+  document.getElementById("modeLocal").style.display  = "block";
+  buildMesasGrid();
+}
+
+function backToModes() {
+  document.getElementById("modeLocal").style.display  = "none";
+  document.getElementById("modePicker").style.display = "block";
+  mesaActual = null;
+  document.getElementById("mesaInput").value = "";
+  document.getElementById("inputNombre").value = "";
+  document.getElementById("btnNombre").disabled = true;
+  document.querySelectorAll(".mesa-btn-w").forEach(b => b.classList.remove("sel"));
+}
+
+function buildMesasGrid() {
+  const grid = document.getElementById("mesasGrid");
+  if (grid.children.length) return;
+  for (let i = 1; i <= TOTAL_MESAS; i++) {
+    const btn = document.createElement("button");
+    btn.className = "mesa-btn-w";
+    btn.id = `mb-${i}`;
+    btn.innerHTML = `${i}<span style="font-family:'DM Sans',sans-serif;font-size:9px;display:block;opacity:.7;letter-spacing:1px;text-transform:uppercase">Mesa</span>`;
+    btn.style.cssText = "aspect-ratio:1;background:#2E2E2E;border:1.5px solid rgba(255,255,255,.08);border-radius:13px;color:#9A8F84;font-family:'Playfair Display',serif;font-size:19px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px";
+    btn.onclick = () => selectMesa(i);
+    grid.appendChild(btn);
+  }
+}
+
+function selectMesa(num) {
+  document.querySelectorAll(".mesa-btn-w").forEach(b => {
+    b.style.background = "#2E2E2E"; b.style.borderColor = "rgba(255,255,255,.08)"; b.style.color = "#9A8F84"; b.style.transform = "none";
+  });
+  const btn = document.getElementById(`mb-${num}`);
+  if (btn) { btn.style.background = "rgba(244,99,30,.18)"; btn.style.borderColor = "#F4631E"; btn.style.color = "#F4631E"; btn.style.transform = "scale(1.07)"; }
+  document.getElementById("mesaInput").value = num;
+  mesaActual = String(num);
+  checkBtnNombre();
+}
+
+function onMesaInput(val) {
+  const num = parseInt(val);
+  document.querySelectorAll(".mesa-btn-w").forEach(b => {
+    b.style.background = "#2E2E2E"; b.style.borderColor = "rgba(255,255,255,.08)"; b.style.color = "#9A8F84"; b.style.transform = "none";
+  });
+  if (num >= 1) {
+    mesaActual = String(num);
+    const btn = document.getElementById(`mb-${num}`);
+    if (btn) { btn.style.background = "rgba(244,99,30,.18)"; btn.style.borderColor = "#F4631E"; btn.style.color = "#F4631E"; }
+  } else { mesaActual = null; }
+  checkBtnNombre();
+}
+
+function checkBtnNombre() {
+  const nombre = document.getElementById("inputNombre").value.trim();
+  const btn = document.getElementById("btnNombre");
+  const ok = nombre.length >= 2 && mesaActual;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? "1" : ".42";
+  btn.style.cursor = ok ? "pointer" : "not-allowed";
+}
+
+function entrarLocal() {
+  nombreCliente = document.getElementById("inputNombre").value.trim();
+  if (!nombreCliente || !mesaActual) return;
+  modoActual = "local";
+  document.getElementById("welcomeScreen").style.display = "none";
+  // Update UI
+  actualizarHeaderInfo();
+  document.getElementById("heroSection").querySelector("p").textContent =
+    "Elige tus platillos y envíalos directo a cocina. ¡Todo hecho con amor!";
+  // Show mesa button, hide WhatsApp
+  document.getElementById("btnWhatsapp").style.display = "none";
+  document.getElementById("btnMesaOrder").style.display = "flex";
+}
+
+function entrarWhatsApp() {
+  modoActual = "whatsapp";
+  nombreCliente = "";
+  mesaActual = null;
+  document.getElementById("welcomeScreen").style.display = "none";
+  actualizarHeaderInfo();
+}
+
+function actualizarHeaderInfo() {
+  // Show a small pill in header with name + mesa (local only)
+  const pill = document.getElementById("infoPill");
+  if (modoActual === "local" && pill) {
+    pill.textContent = `${nombreCliente} · Mesa ${mesaActual}`;
+    pill.style.display = "flex";
+  }
+}
+
+// ── Baserow ──
 async function saveOrderToStorage(type, mesa = null) {
   const order = {
-    id:        "ORD-" + Date.now(),
+    order_id:  "ORD-" + Date.now(),
     type:      type,
     mesa:      mesa || "",
+    nombre:    type === "local" ? nombreCliente : "",
+    telefono:  "",
     items:     JSON.stringify(cart.map(c => ({ ...c }))),
     total:     getTotal(),
     timestamp: Date.now(),
     status:    "pending"
   };
   try {
-    await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`, {
+    await fetch(`${BASEROW_URL}/?user_field_names=true`, {
       method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ data: order })
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Token ${BASEROW_TOKEN}`
+      },
+      body: JSON.stringify(order)
     });
   } catch(e) {
-    console.warn("SheetDB save error:", e);
+    console.warn("Baserow save error:", e);
   }
 }
 
@@ -1530,15 +1687,13 @@ async function ordenarEnMesa() {
     showToast("⚠️ Tu carrito está vacío", true);
     return;
   }
-  const params = new URLSearchParams(window.location.search);
-  const mesa = params.get("mesa");
   showToast("⏳ Enviando pedido a cocina…");
-  await saveOrderToStorage("local", mesa);
+  await saveOrderToStorage("local", mesaActual);
   cart = [];
   updateCartUI();
   renderCartItems();
   toggleCart();
-  showToast("✅ ¡Pedido enviado a cocina!");
+  showToast(`✅ ¡Listo ${nombreCliente}! Pedido en camino — Mesa ${mesaActual}`);
 }
 
 // ══════════════════════════════════════════════
@@ -1556,34 +1711,8 @@ function showToast(msg, isWarning = false) {
 }
 
 // ══════════════════════════════════════════════
-// MODO MESA — detección por URL ?mesa=N
-// ══════════════════════════════════════════════
-function initMesaMode() {
-  const params = new URLSearchParams(window.location.search);
-  const mesa = params.get("mesa");
-
-  if (mesa) {
-    document.body.classList.add("modo-mesa");
-
-    // Mostrar banner de mesa
-    document.getElementById("mesaBanner").style.display = "flex";
-    document.getElementById("mesaNumLabel").textContent = `Mesa ${mesa}`;
-
-    // Cambiar hero para modo catálogo
-    const hero = document.getElementById("heroSection");
-    hero.querySelector("p").textContent =
-      "Explora nuestro menú y dile a tu mesero qué se te antoja. ¡Todo hecho con amor!";
-
-    // Mostrar botón de cocina, ocultar WhatsApp
-    document.getElementById("btnWhatsapp").style.display = "none";
-    document.getElementById("btnMesaOrder").style.display = "flex";
-  }
-}
-
-// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
-initMesaMode();
 renderSection("antojitos");
 </script>
 
