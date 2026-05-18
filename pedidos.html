@@ -1104,11 +1104,8 @@ function showToast(msg) {
   await render();
 })();
 
-// Auto-refresh cada 15 segundos
-autoRefreshTimer = setInterval(() => { render(); }, 15000);
-
-// Actualizar tiempos cada 60 segundos
-setInterval(() => { render(); }, 60000);
+// Auto-refresh cada 8 segundos
+autoRefreshTimer = setInterval(() => { render(); }, 8000);
 </script>
 </body>
 </html>
