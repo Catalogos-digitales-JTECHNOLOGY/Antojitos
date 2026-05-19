@@ -254,7 +254,7 @@ body::before {
 
 /* ── MENU SECTION ── */
 .menu-section {
-  padding: 32px 16px 120px;
+  padding: 32px 16px 160px;
   max-width: 1100px;
   margin: 0 auto;
   position: relative;
@@ -432,16 +432,17 @@ body::before {
   border-radius: 50px;
   color: white;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 22px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   transition: var(--transition);
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(244,99,30,0.35);
+  letter-spacing: 0.2px;
 }
 
 .btn-add:hover {
@@ -452,7 +453,109 @@ body::before {
 
 .btn-add:active { transform: scale(0.97); }
 
-/* ── CART DRAWER ── */
+/* ── CTA BAR FLOTANTE ── */
+.cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 998;
+  padding: 12px 16px 20px;
+  background: linear-gradient(to top, rgba(26,26,26,1) 60%, rgba(26,26,26,0));
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cta-bar.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.cta-btn {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--orange);
+  border: none;
+  border-radius: 18px;
+  padding: 16px 22px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(244,99,30,0.55);
+  transition: var(--transition);
+  font-family: 'DM Sans', sans-serif;
+  color: white;
+  animation: cta-pulse 2.5s ease-in-out infinite;
+}
+
+.cta-btn:hover {
+  background: var(--orange-light);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(244,99,30,0.65);
+}
+
+.cta-btn:active { transform: scale(0.98); }
+
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(244,99,30,0.55); }
+  50% { box-shadow: 0 8px 42px rgba(244,99,30,0.8); }
+}
+
+.cta-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cta-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.cta-text {
+  text-align: left;
+}
+
+.cta-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.1px;
+}
+
+.cta-sub {
+  font-size: 11px;
+  opacity: 0.82;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.cta-total {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.cta-badge {
+  background: white;
+  color: var(--orange);
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
 .cart-overlay {
   position: fixed;
   inset: 0;
@@ -903,8 +1006,7 @@ body.modo-mesa .cart-drawer { display: none !important; }
   .card-title { font-size: 14px; }
   .card-desc { font-size: 11px; min-height: 0; display: none; }
   .price { font-size: 18px; }
-  .btn-add { font-size: 12px; padding: 8px 12px; }
-  .btn-add .btn-add-text { display: none; }
+  .btn-add { font-size: 12px; padding: 9px 14px; }
 }
 
 @media (max-width: 380px) {
@@ -978,13 +1080,29 @@ body.modo-mesa .cart-drawer { display: none !important; }
     <div id="infoPill" style="display:none;background:rgba(212,168,83,.14);border:1px solid rgba(212,168,83,.28);color:#D4A853;font-size:12px;font-weight:700;padding:6px 13px;border-radius:50px;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px" onclick="document.getElementById('welcomeScreen').style.display='flex'">
       🪑
     </div>
-    <button class="cart-btn" onclick="toggleCart()">
+    <button class="cart-btn" onclick="toggleCart()" title="Ver carrito">
       <i class="bi bi-bag2-fill"></i>
-      <span id="cartTotal">$0</span>
       <span class="cart-badge" id="cartCount">0</span>
     </button>
   </div>
 </header>
+
+<!-- CTA BAR FLOTANTE -->
+<div class="cta-bar" id="ctaBar">
+  <button class="cta-btn" onclick="toggleCart()">
+    <div class="cta-left">
+      <span class="cta-icon">🛒</span>
+      <div class="cta-text">
+        <div class="cta-title">¡Pica aquí para enviar tu pedido!</div>
+        <div class="cta-sub" id="ctaSub">0 productos en tu carrito</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <span class="cta-total" id="cartTotal">$0</span>
+      <span class="cta-badge" id="ctaBadge">0</span>
+    </div>
+  </button>
+</div>
 
 <!-- BANNER MESA (se muestra solo en modo mesa) -->
 <div class="mesa-banner" id="mesaBanner" style="display:none">
@@ -1069,7 +1187,7 @@ body.modo-mesa .cart-drawer { display: none !important; }
 // ══════════════════════════════════════════════
 // WHATSAPP NUMBER — Cambia este número
 // ══════════════════════════════════════════════
-const WA_NUMBER = "522224613215"; // ← Pon tu número aquí (código de país + número)
+const WA_NUMBER = "5221XXXXXXXX"; // ← Pon tu número aquí (código de país + número)
 
 // ══════════════════════════════════════════════
 // DATOS DEL MENÚ
@@ -1390,8 +1508,7 @@ function renderSection(catKey) {
             <div class="price" id="price-${item.id}">$${item.price}</div>
           </div>
           <button class="btn-add" onclick="addToCart('${catKey}', '${item.id}')">
-            <i class="bi bi-plus-lg"></i>
-            <span class="btn-add-text">Agregar</span>
+            <i class="bi bi-plus-lg"></i> Agregar
           </button>
         </div>
       </div>
@@ -1486,6 +1603,14 @@ function updateCartUI() {
   document.getElementById("cartTotal").textContent = `$${total}`;
   document.getElementById("cartCount").textContent = count;
   document.getElementById("drawerTotal").textContent = `$${total}`;
+
+  // CTA bar
+  const ctaBar   = document.getElementById("ctaBar");
+  const ctaBadge = document.getElementById("ctaBadge");
+  const ctaSub   = document.getElementById("ctaSub");
+  if (ctaBadge) ctaBadge.textContent = count;
+  if (ctaSub)   ctaSub.textContent   = `${count} producto${count !== 1 ? "s" : ""} en tu carrito`;
+  if (ctaBar)   ctaBar.classList.toggle("visible", count > 0);
 
   // Bounce animation
   const badge = document.getElementById("cartCount");
