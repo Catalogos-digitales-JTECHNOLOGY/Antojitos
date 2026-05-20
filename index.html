@@ -324,9 +324,10 @@ body::before {
   border: 1.5px solid rgba(255,255,255,0.09);
   border-radius: 10px; color: var(--text-main);
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px; padding: 10px 13px;
+  font-size: 16px; padding: 10px 13px;
   margin-bottom: 8px; outline: none;
   transition: border-color .25s;
+  -webkit-appearance: none;
 }
 .addr-input:focus { border-color: #25D366; box-shadow: 0 0 0 3px rgba(37,211,102,0.1); }
 .addr-input::placeholder { color: var(--text-muted); }
@@ -374,8 +375,43 @@ body.modo-mesa .btn-add { display: none !important; }
 body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !important; }
 @keyframes cartBounce { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(0.9); } 100% { transform: scale(1); } }
 .cart-bounce { animation: cartBounce 0.4s ease; }
-@media (max-width: 576px) { .hero { padding: 32px 16px 20px; } .products-grid { grid-template-columns: 1fr 1fr; gap: 12px; } .card-img-wrap { height: 140px; } .card-body { padding: 12px; } .card-title { font-size: 14px; } .card-desc { font-size: 11px; min-height: 0; display: none; } .price { font-size: 18px; } .btn-add { font-size: 12px; padding: 9px 14px; } }
-@media (max-width: 380px) { .products-grid { grid-template-columns: 1fr; } .card-img-wrap { height: 160px; } .card-desc { display: block; } }
+@media (max-width: 576px) {
+  .hero { padding: 24px 16px 16px; }
+  .hero h1 { font-size: clamp(30px, 8vw, 42px); }
+  .hero p { font-size: 14px; }
+  .products-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card-img-wrap { height: 130px; }
+  .card-body { padding: 10px; }
+  .card-title { font-size: 13px; }
+  .card-desc { font-size: 11px; min-height: 0; display: none; }
+  .price { font-size: 17px; }
+  .btn-add { font-size: 11px; padding: 8px 10px; gap: 4px; }
+  .extras-select { font-size: 11px; padding: 5px 8px; }
+  .cat-pill { font-size: 12px; padding: 8px 14px; }
+  .logo-name { font-size: 17px; }
+  .cart-btn { padding: 8px 14px; font-size: 13px; }
+  .cta-bar { padding: 10px 12px 16px; }
+  .cta-btn { padding: 13px 16px; border-radius: 14px; }
+  .cta-icon { font-size: 22px; }
+  .cta-title { font-size: 13px; }
+  .cta-total { font-size: 18px; }
+  /* Welcome screen en móvil */
+  #welcomeCard { padding: 28px 20px 24px !important; border-radius: 20px !important; }
+  .drawer-header { padding: 16px 16px 12px; }
+  .drawer-items { padding: 12px 16px; }
+  .drawer-footer { padding: 12px 16px 20px; }
+  .total-amount { font-size: 24px; }
+  .btn-whatsapp { font-size: 15px; padding: 14px; }
+  .btn-mesa-order { font-size: 15px; padding: 14px; }
+  /* Ocultar "Panel cocina" en móvil del cliente */
+  .staff-link { bottom: 80px; right: 12px; font-size: 10px; padding: 6px 10px; }
+}
+@media (max-width: 380px) {
+  .products-grid { grid-template-columns: 1fr; }
+  .card-img-wrap { height: 155px; }
+  .card-desc { display: block; font-size: 12px; }
+  .card-body { padding: 12px; }
+}
 
 /* ══ TICKET DE COCINA (solo visible al imprimir) ══ */
 @media print {
@@ -467,7 +503,7 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 </div>
 
 <!-- ══ PANTALLA DE BIENVENIDA ══ -->
-<div id="welcomeScreen" style="position:fixed;inset:0;z-index:5000;background:#1A1A1A;display:flex;align-items:center;justify-content:center;padding:20px">
+<div id="welcomeScreen" style="position:fixed;inset:0;z-index:5000;background:#1A1A1A;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
   <div id="welcomeCard" style="background:#252525;border:1px solid rgba(244,99,30,.22);border-radius:26px;padding:36px 28px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6)">
     <div style="width:62px;height:62px;background:#F4631E;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px;box-shadow:0 0 28px rgba(244,99,30,.4)">🌮</div>
     <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:6px">La <em style="font-style:italic;color:#F4631E">Antojería</em></div>
@@ -621,7 +657,7 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
         <i class="bi bi-geo-fill"></i> Usar mi ubicación GPS
       </button>
       <div class="gps-result" id="gpsResult">
-        <i class="bi bi-check-circle-fill"></i>
+        <i class="bi bi-check-circle-fill" style="flex-shrink:0"></i>
         <span id="gpsText">Ubicación capturada</span>
       </div>
     </div>
@@ -879,22 +915,25 @@ function obtenerUbicacion() {
     pos => {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
-      const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
       gpsCoords = { lat, lng, url: mapsUrl };
 
-      gpsText.textContent = `📍 ${lat}, ${lng}`;
+      gpsText.innerHTML = `📍 Ubicación capturada &nbsp;<a href="${mapsUrl}" target="_blank" style="color:#25D366;font-size:11px;text-decoration:underline">Ver en mapa ↗</a>`;
       result.classList.add("show");
       btn.innerHTML = `<i class="bi bi-check-circle-fill"></i> ✅ Ubicación capturada`;
       btn.classList.add("got-location");
       btn.disabled = false;
-      showToast("📍 Ubicación GPS capturada");
+      showToast("📍 Ubicación GPS capturada correctamente");
     },
     err => {
       btn.innerHTML = `<i class="bi bi-geo-fill"></i> Reintentar GPS`;
       btn.disabled = false;
-      showToast("⚠️ No se pudo obtener el GPS. Escribe tu dirección.", true);
+      let msg = "⚠️ No se pudo obtener el GPS. Escribe tu dirección.";
+      if (err.code === 1) msg = "⚠️ Permiso de ubicación denegado. Escribe tu dirección.";
+      else if (err.code === 3) msg = "⚠️ GPS tardó demasiado. Intenta de nuevo.";
+      showToast(msg, true);
     },
-    { timeout: 10000, enableHighAccuracy: true }
+    { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 }
   );
 }
 
@@ -1138,6 +1177,7 @@ async function sendWhatsApp() {
     document.getElementById("gpsResult").classList.remove("show");
     document.getElementById("btnGPS").innerHTML = `<i class="bi bi-geo-fill"></i> Usar mi ubicación GPS`;
     document.getElementById("btnGPS").classList.remove("got-location");
+    document.getElementById("gpsText").innerHTML = "Ubicación capturada";
     ["addrCalle","addrColonia","addrReferencia","addrNotas"].forEach(id => { document.getElementById(id).value = ""; });
     updateCartUI(); renderCartItems(); toggleCart();
     showToast("✅ ¡Pedido enviado! El carrito fue limpiado.");
