@@ -376,8 +376,8 @@ let prevOrderCount = 0;
 // ══════════════════════════════
 // BASEROW CONFIG
 // ══════════════════════════════
-const BASEROW_URL  = "https://api.baserow.io/api/database/rows/table/987412";
-const BASEROW_TOKEN= "KdAIw6tWK70RIOmSxXuyv86LAQDtsehO";
+const BASEROW_URL    = "https://api.baserow.io/api/database/rows/table/987412";
+const BASEROW_TOKEN  = "KdAIw6tWK70RIOmSxXuyv86LAQDtsehO";
 let ordersCache      = [];
 
 function parseRow(row) {
@@ -507,6 +507,10 @@ function renderCol(colId, orders, filter) {
   filtered.forEach((order, i) => {
     const card = buildCard(order, i);
     col.appendChild(card);
+    // Generar QR después de insertar al DOM
+    if (order.type === "whatsapp" && order.address) {
+      generateQR(order.id, order.address);
+    }
   });
 }
 
@@ -543,30 +547,19 @@ function buildCard(order, delay) {
   let addressHTML = "";
   if (order.type === "whatsapp" && order.address) {
     // Extraer link de GPS si existe
-    // Extraer cualquier URL de Google Maps del campo address
-    const gpsMatch = order.address.match(/(https?:\/\/[^\s|]+)/);
+    const gpsMatch = order.address.match(/(https?:\/\/maps\.google[^\s|]+)/);
     const gpsLink  = gpsMatch ? gpsMatch[1] : null;
-    // Limpiar dirección: quitar la parte "GPS: url" y los pipes
-    const addrDisplay = order.address
-      .replace(/GPS:\s*https?:\/\/[^\s|]+/i, "")
-      .replace(/\s*\|\s*/g, ", ")
-      .replace(/,\s*$/, "")
-      .trim();
-    // Si hay URL de GPS úsala directamente, si no buscar la dirección en Maps
-    const mapsUrl = gpsLink
-      ? gpsLink
-      : addrDisplay
-        ? `https://maps.google.com/?q=${encodeURIComponent(addrDisplay)}`
-        : null;
-    const btnUbicacion = mapsUrl
-      ? `<a class="btn-ver-ubicacion" href="${mapsUrl}" target="_blank" rel="noopener"><i class="bi bi-geo-alt-fill"></i> Ver ubicación</a>`
-      : `<span class="btn-ver-ubicacion" style="opacity:0.38;cursor:not-allowed;pointer-events:none"><i class="bi bi-geo-alt"></i> Sin GPS</span>`;
+    const addrDisplay = order.address.replace(/GPS: https?:\/\/[^\s|]+/, "").replace(/\s*\|\s*$/, "").trim();
+
+    const mapsUrl = gpsLink || `https://maps.google.com/?q=${encodeURIComponent(addrDisplay)}`;
     addressHTML = `
       <div class="order-address-row">
         <div class="order-address-text">
-          <span class="addr-icon">📍</span>${addrDisplay || "Sin dirección"}
+          <span class="addr-icon">📍</span>${addrDisplay}
         </div>
-        ${btnUbicacion}
+        <a class="btn-ver-ubicacion" href="${mapsUrl}" target="_blank" rel="noopener">
+          <i class="bi bi-geo-alt-fill"></i> Ver ubicación
+        </a>
       </div>`;
   }
 
