@@ -454,53 +454,9 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 </head>
 <body>
 
-<!-- ══ TICKET COCINA (oculto, solo para imprimir) ══ -->
-<div id="ticketCocina">
-  <div class="tk-header">
-    <div class="tk-logo">🌮 LA ANTOJERÍA</div>
-    <div class="tk-sub">TICKET DE COCINA</div>
-  </div>
-  <div class="tk-section">
-    <div class="tk-label">Folio</div>
-    <div class="tk-val" id="tk-folio">—</div>
-  </div>
-  <div class="tk-section">
-    <div class="tk-label">Hora</div>
-    <div class="tk-val" id="tk-hora">—</div>
-  </div>
-  <div class="tk-section">
-    <div class="tk-label">Tipo</div>
-    <div id="tk-tipo-badge" class="tk-type-badge">—</div>
-  </div>
-  <div class="tk-section" id="tk-mesa-row">
-    <div class="tk-label">Mesa</div>
-    <div class="tk-val" id="tk-mesa">—</div>
-  </div>
-  <div class="tk-section" id="tk-nombre-row">
-    <div class="tk-label">Cliente</div>
-    <div class="tk-val" id="tk-nombre">—</div>
-  </div>
-  <div class="tk-section" id="tk-tel-row">
-    <div class="tk-label">Teléfono</div>
-    <div class="tk-val" id="tk-tel">—</div>
-  </div>
-  <hr class="tk-divider">
-  <div id="tk-items"><!-- items --></div>
-  <div class="tk-total">
-    <span>TOTAL</span>
-    <span id="tk-total">$0</span>
-  </div>
-  <div class="tk-section" id="tk-address-row" style="display:none">
-    <div class="tk-label">📍 Dirección de entrega</div>
-    <div class="tk-address" id="tk-address-text">—</div>
-  </div>
-  <div class="tk-footer">
-    ¡Gracias por tu preferencia!<br>
-    <span id="tk-footer-extra"></span>
-  </div>
-</div>
 
-<!-- ══ PANTALLA DE BIENVENIDA ══ -->
+
+<!-- ══ PANTALLA<!-- ══ PANTALLA DE BIENVENIDA ══ -->
 <div id="welcomeScreen" style="position:fixed;inset:0;z-index:5000;background:#1A1A1A;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
   <div id="welcomeCard" style="background:#252525;border:1px solid rgba(244,99,30,.22);border-radius:26px;padding:36px 28px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6)">
     <div style="width:62px;height:62px;background:#F4631E;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px;box-shadow:0 0 28px rgba(244,99,30,.4)">🌮</div>
@@ -686,17 +642,16 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 </div>
 
 
-<!-- MODAL CONFIRMACIÓN PEDIDO MESA -->
-<div class="confirm-modal-overlay" id="confirmMesaModal">
-  <div class="confirm-modal">
-    <div class="confirm-check">✅</div>
-    <div class="confirm-title">¡Pedido enviado!</div>
-    <div class="confirm-sub" id="confirmMesaTxt">Tu pedido está en camino a cocina.</div>
-    <div class="confirm-time-box">
-      <div class="confirm-time-label">⏱ Tiempo estimado</div>
-      <div class="confirm-time-val" id="confirmMesaHora">Calculando…</div>
+<!-- MODAL TICKET CLIENTE -->
+<div class="tck-overlay" id="ticketClienteModal">
+  <div class="tck-modal">
+    <div class="tck-header">
+      <div class="tck-check">🌮</div>
+      <div class="tck-title">¡Pedido recibido!</div>
+      <div class="tck-sub">Gracias, ya estamos preparando tu orden</div>
     </div>
-    <button class="confirm-btn" onclick="cerrarConfirmMesa()">¡Entendido, gracias! 🌮</button>
+    <div id="ticketClienteBody"></div>
+    <button class="tck-close-btn" onclick="cerrarTicketCliente()">¡Entendido, gracias! 👍</button>
   </div>
 </div>
 
@@ -1077,65 +1032,54 @@ async function saveOrderToStorage(type, mesa = null, telefono = "", address = ""
 // ══════════════════════════════════════════════
 // TICKET DE COCINA
 // ══════════════════════════════════════════════
-function imprimirTicket(orderData) {
-  const now = new Date();
-  const hora = now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+function mostrarTicketCliente(orderData, colaInfo) {
+  const now   = new Date();
+  const hora  = now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   const fecha = now.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const folio = (orderData.order_id || "ORD-" + Date.now()).slice(-6).toUpperCase();
 
-  document.getElementById("tk-folio").textContent = orderData.order_id || ("ORD-" + Date.now());
-  document.getElementById("tk-hora").textContent = `${fecha} ${hora}`;
+  const items = typeof orderData.items === "string" ? JSON.parse(orderData.items) : orderData.items;
+  const itemsHTML = items.map(item => `
+    <div class="tck-item">
+      <span class="tck-item-emoji">${item.emoji || "🍽️"}</span>
+      <span class="tck-item-name">${item.name}${item.extraLabel ? `<small> · ${item.extraLabel}</small>` : ""}</span>
+      <span class="tck-item-qty">×${item.qty}</span>
+      <span class="tck-item-price">$${item.price * item.qty}</span>
+    </div>`).join("");
 
-  const tipo = orderData.type === "local" ? "MESA LOCAL" : "DOMICILIO / WA";
-  document.getElementById("tk-tipo-badge").textContent = tipo;
+  const esDomicilio = orderData.type === "whatsapp";
+  const infoExtra = esDomicilio
+    ? `<div class="tck-info-row"><i class="bi bi-whatsapp"></i> Pedido por WhatsApp · Domicilio</div>`
+    : `<div class="tck-info-row"><i class="bi bi-geo-alt-fill"></i> Mesa ${orderData.mesa} · ${orderData.nombre || ""}</div>`;
 
-  const mesaRow = document.getElementById("tk-mesa-row");
-  const nombreRow = document.getElementById("tk-nombre-row");
-  const telRow = document.getElementById("tk-tel-row");
-  const addrRow = document.getElementById("tk-address-row");
-
-  if (orderData.type === "local") {
-    mesaRow.style.display = "block";
-    document.getElementById("tk-mesa").textContent = `Mesa ${orderData.mesa}`;
-    nombreRow.style.display = "block";
-    document.getElementById("tk-nombre").textContent = orderData.nombre || "—";
-    telRow.style.display = "none";
-    addrRow.style.display = "none";
-  } else {
-    mesaRow.style.display = "none";
-    nombreRow.style.display = "none";
-    telRow.style.display = orderData.telefono ? "block" : "none";
-    document.getElementById("tk-tel").textContent = orderData.telefono || "—";
-    if (orderData.address) {
-      addrRow.style.display = "block";
-      document.getElementById("tk-address-text").textContent = orderData.address;
-    } else { addrRow.style.display = "none"; }
+  let tiempoHTML = "";
+  if (colaInfo) {
+    const msg = colaInfo.pedidosEnCola === 0
+      ? `¡Tu pedido es el primero! Ya estamos en ello 🔥`
+      : `Hay ${colaInfo.pedidosEnCola} pedido${colaInfo.pedidosEnCola > 1 ? "s" : ""} antes que el tuyo`;
+    tiempoHTML = `
+      <div class="tck-time-box">
+        <div class="tck-time-label">⏱ Tiempo estimado</div>
+        <div class="tck-time-val">Listo aprox. a las ${colaInfo.hora} <small>(~${colaInfo.mins} min)</small></div>
+        <div class="tck-time-sub">${msg}</div>
+      </div>`;
   }
 
-  // Items
-  const itemsEl = document.getElementById("tk-items");
-  itemsEl.innerHTML = "";
-  const items = typeof orderData.items === "string" ? JSON.parse(orderData.items) : orderData.items;
-  items.forEach(item => {
-    const row = document.createElement("div");
-    row.className = "tk-item";
-    row.innerHTML = `
-      <span class="tk-item-qty">${item.qty}x</span>
-      <span class="tk-item-name">${item.name}${item.extraLabel ? ` (${item.extraLabel})` : ""}</span>
-      <span class="tk-item-price">$${item.price * item.qty}</span>`;
-    itemsEl.appendChild(row);
-  });
+  document.getElementById("ticketClienteBody").innerHTML = `
+    <div class="tck-folio">Folio #${folio} · ${hora}</div>
+    ${infoExtra}
+    <div class="tck-items">${itemsHTML}</div>
+    <div class="tck-total-row">
+      <span>Total</span>
+      <span class="tck-total-amt">$${orderData.total} <small>MXN</small></span>
+    </div>
+    ${tiempoHTML}`;
 
-  document.getElementById("tk-total").textContent = `$${orderData.total} MXN`;
+  document.getElementById("ticketClienteModal").classList.add("open");
+}
 
-  const footerExtra = orderData.type === "whatsapp"
-    ? `Pedido a domicilio — confirmar por WA`
-    : `Pedido local · ${fecha}`;
-  document.getElementById("tk-footer-extra").textContent = footerExtra;
-
-  // Show ticket and print
-  document.getElementById("ticketCocina").style.display = "block";
-  setTimeout(() => { window.print(); }, 150);
-  setTimeout(() => { document.getElementById("ticketCocina").style.display = "none"; }, 2500);
+function cerrarTicketCliente() {
+  document.getElementById("ticketClienteModal").classList.remove("open");
 }
 
 // ══════════════════════════════════════════════
@@ -1221,23 +1165,19 @@ async function sendWhatsApp() {
   const url = `https://wa.me/${WA_NUMBER}?text=${encoded}`;
   window.open(url, "_blank");
 
-  // Guardar en Baserow y generar ticket
+  // Guardar en Baserow
   const orderData = await saveOrderToStorage("whatsapp", null, telefono, address);
   orderData.items = cart.map(c => ({ ...c }));
 
-  // Imprimir ticket de cocina
-  setTimeout(() => imprimirTicket(orderData), 400);
-
-  setTimeout(() => {
-    cart = []; gpsCoords = null;
-    document.getElementById("gpsResult").classList.remove("show");
-    document.getElementById("btnGPS").innerHTML = `<i class="bi bi-geo-fill"></i> Usar mi ubicación GPS`;
-    document.getElementById("btnGPS").classList.remove("got-location");
-    document.getElementById("gpsText").innerHTML = "Ubicación capturada";
-    ["addrCalle","addrColonia","addrReferencia","addrNotas"].forEach(id => { document.getElementById(id).value = ""; });
-    updateCartUI(); renderCartItems(); toggleCart();
-    showToast("✅ ¡Pedido enviado! El carrito fue limpiado.");
-  }, 800);
+  // Limpiar carrito y mostrar confirmación visual al cliente
+  cart = []; gpsCoords = null;
+  document.getElementById("gpsResult").classList.remove("show");
+  document.getElementById("btnGPS").innerHTML = `<i class="bi bi-geo-fill"></i> Usar mi ubicación GPS`;
+  document.getElementById("btnGPS").classList.remove("got-location");
+  document.getElementById("gpsText").innerHTML = "Ubicación capturada";
+  ["addrCalle","addrColonia","addrReferencia","addrNotas"].forEach(id => { document.getElementById(id).value = ""; });
+  updateCartUI(); renderCartItems(); toggleCart();
+  mostrarTicketCliente(orderData, colaInfo);
 }
 
 // ══════════════════════════════════════════════
@@ -1254,38 +1194,19 @@ async function ordenarEnMesa() {
   orderData.nombre = nombreCliente;
   orderData.items = cart.map(c => ({ ...c }));
 
-  // Imprimir ticket de cocina
-  setTimeout(() => imprimirTicket(orderData), 300);
-
   cart = []; updateCartUI(); renderCartItems(); toggleCart();
 
-  // Mostrar modal de confirmación con tiempo estimado
-  mostrarConfirmacionMesa(colaInfo);
+  // Mostrar confirmación visual al cliente
+  mostrarTicketCliente(orderData, colaInfo);
 }
 
 
 // ══════════════════════════════════════════════
 // MODAL CONFIRMACIÓN MESA
 // ══════════════════════════════════════════════
-function mostrarConfirmacionMesa(colaInfo) {
-  const modal = document.getElementById("confirmMesaModal");
-  const txt   = document.getElementById("confirmMesaTxt");
-  const hora  = document.getElementById("confirmMesaHora");
 
-  if (colaInfo.pedidosEnCola === 0) {
-    txt.textContent = "¡Tu pedido es el primero en cola! Ya estamos preparándolo.";
-  } else if (colaInfo.pedidosEnCola === 1) {
-    txt.textContent = "Hay 1 pedido antes que el tuyo. ¡Pronto será tu turno!";
-  } else {
-    txt.textContent = `Hay ${colaInfo.pedidosEnCola} pedidos antes que el tuyo. ¡No tardamos!`;
-  }
-  hora.textContent = `Tu pedido estará listo aprox. a las ${colaInfo.hora} (~${colaInfo.mins} min)`;
-  modal.classList.add("open");
-}
 
-function cerrarConfirmMesa() {
-  document.getElementById("confirmMesaModal").classList.remove("open");
-}
+
 // ══════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════
@@ -1308,56 +1229,95 @@ renderSection("antojitos");
 <style>
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* ── MODAL CONFIRMACIÓN PEDIDO ── */
-.confirm-modal-overlay {
+/* ── MODAL TICKET CLIENTE ── */
+.tck-overlay {
   position: fixed; inset: 0; z-index: 6000;
-  background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
-  display: none; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 16px; overflow-y: auto;
 }
-.confirm-modal-overlay.open { display: flex; }
-.confirm-modal {
-  background: #252525; border: 1px solid rgba(244,99,30,0.25);
-  border-radius: 24px; padding: 32px 28px 28px;
-  width: 100%; max-width: 380px; text-align: center;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
-  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+.tck-overlay.open { display: flex; }
+.tck-modal {
+  background: #1E1E1E; border: 1px solid rgba(244,99,30,0.2);
+  border-radius: 26px; padding: 0;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.8);
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  overflow: hidden;
 }
 @keyframes popIn {
-  from { opacity:0; transform: scale(0.85) translateY(20px); }
+  from { opacity:0; transform: scale(0.88) translateY(24px); }
   to   { opacity:1; transform: scale(1) translateY(0); }
 }
-.confirm-check {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: rgba(46,204,113,0.15); border: 2px solid rgba(46,204,113,0.4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; margin: 0 auto 18px;
+.tck-header {
+  background: linear-gradient(135deg, rgba(244,99,30,0.18) 0%, rgba(244,99,30,0.06) 100%);
+  border-bottom: 1px solid rgba(244,99,30,0.15);
+  padding: 28px 24px 20px; text-align: center;
 }
-.confirm-title {
-  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900;
-  color: #F0EBE3; margin-bottom: 8px;
+.tck-check {
+  font-size: 48px; margin-bottom: 10px; display: block;
+  animation: bounceIn 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
 }
-.confirm-sub {
-  font-size: 14px; color: #9A8F84; line-height: 1.6; margin-bottom: 16px;
+@keyframes bounceIn { from{opacity:0;transform:scale(0.4)} to{opacity:1;transform:scale(1)} }
+.tck-title {
+  font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900;
+  color: #F0EBE3; margin-bottom: 4px;
 }
-.confirm-time-box {
-  background: rgba(244,99,30,0.1); border: 1px solid rgba(244,99,30,0.25);
-  border-radius: 14px; padding: 14px 18px; margin-bottom: 22px;
+.tck-sub { font-size: 13px; color: #9A8F84; }
+/* Body */
+.tck-folio { font-size: 11px; color: #9A8F84; letter-spacing: 1px; padding: 12px 20px 0; }
+.tck-info-row {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; color: #FF8C4B;
+  padding: 6px 20px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.confirm-time-label {
+/* Items */
+.tck-items { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tck-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0; font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.tck-item:last-child { border-bottom: none; }
+.tck-item-emoji { font-size: 18px; flex-shrink: 0; }
+.tck-item-name { flex: 1; color: #F0EBE3; font-weight: 500; }
+.tck-item-name small { color: #FF8C4B; font-size: 11px; display: block; margin-top: 1px; }
+.tck-item-qty { font-size: 11px; font-weight: 700; color: #9A8F84; background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
+.tck-item-price { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #F4631E; flex-shrink: 0; }
+/* Total */
+.tck-total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px; color: #9A8F84; font-weight: 500;
+}
+.tck-total-amt {
+  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: #F0EBE3;
+}
+.tck-total-amt small { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #9A8F84; font-weight: 400; }
+/* Tiempo */
+.tck-time-box {
+  margin: 14px 20px; background: rgba(244,99,30,0.08);
+  border: 1px solid rgba(244,99,30,0.2); border-radius: 14px; padding: 14px 16px;
+}
+.tck-time-label {
   font-size: 10px; color: #FF8C4B; letter-spacing: 2px;
-  text-transform: uppercase; font-weight: 700; margin-bottom: 6px;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 5px;
 }
-.confirm-time-val {
-  font-family: 'Playfair Display', serif; font-size: 17px;
-  font-weight: 700; color: #F0EBE3; line-height: 1.4;
+.tck-time-val {
+  font-family: 'Playfair Display', serif; font-size: 18px;
+  font-weight: 700; color: #F0EBE3; line-height: 1.3;
 }
-.confirm-btn {
-  width: 100%; background: #F4631E; border: none; border-radius: 14px;
+.tck-time-val small { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #9A8F84; font-weight: 400; }
+.tck-time-sub { font-size: 12px; color: #9A8F84; margin-top: 4px; }
+/* Botón cerrar */
+.tck-close-btn {
+  display: block; width: calc(100% - 40px); margin: 0 20px 20px;
+  background: #F4631E; border: none; border-radius: 14px;
   color: white; font-family: 'DM Sans', sans-serif;
   font-size: 15px; font-weight: 700; padding: 14px;
   cursor: pointer; transition: all 0.2s;
 }
-.confirm-btn:hover { background: #FF8C4B; }
+.tck-close-btn:hover { background: #FF8C4B; transform: translateY(-1px); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
