@@ -637,6 +637,7 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 <nav class="cat-nav">
   <div class="cat-scroll" id="catScroll">
     <button class="cat-pill active" data-cat="antojitos" onclick="filterCat(this)">🌮 Antojitos</button>
+    <button class="cat-pill" data-cat="desayunos" onclick="filterCat(this)">🍳 Desayunos</button>
     <button class="cat-pill" data-cat="postres" onclick="filterCat(this)">🍰 Postres</button>
     <button class="cat-pill" data-cat="fuertes" onclick="filterCat(this)">🍔 Tortas y más</button>
   </div>
@@ -740,8 +741,8 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 // CONFIG
 // ══════════════════════════════════════════════
 const WA_NUMBER    = "522224613215"; // ← Cambia tu número
-const BASEROW_URL  = "https://api.baserow.io/api/database/rows/table/982867";
-const BASEROW_TOKEN= "LkiLblh7BT6mLA8PwTMzNt6WkcRYDqrZ";
+const BASEROW_URL  = "https://api.baserow.io/api/database/rows/table/987412";
+const BASEROW_TOKEN= "KdAIw6tWK70RIOmSxXuyv86LAQDtsehO";
 const TOTAL_MESAS  = 12;
 
 let cart          = [];
@@ -780,15 +781,22 @@ const menu = {
     ]
   },
   postres: {
-    label: "Postres", emoji: "🍰", subtitle: "El dulce final perfecto",
+    label: "Postres & Frappes", emoji: "🍰", subtitle: "El dulce final perfecto",
     items: [
-      { id:"p1", name:"Choco Flan", emoji:"🍮", desc:"La combinación perfecta: pastel de chocolate con flan de cajeta.", price:55, extras:[{label:"Porción normal",add:0},{label:"+ Cajeta extra",add:8},{label:"Porción grande (+$15)",add:15}] },
-      { id:"p2", name:"Pastel Napolitano", emoji:"🎂", desc:"Tres capas de sabores: fresa, chocolate y vainilla. Un clásico del recuerdo.", price:50, extras:[{label:"Rebanada",add:0},{label:"Rebanada doble (+$20)",add:20}] },
-      { id:"p3", name:"Fresas con Crema", emoji:"🍓", desc:"Fresas naturales con crema batida, leche condensada y granola.", price:45, extras:[{label:"En vaso",add:0},{label:"En charola (+$35)",add:35},{label:"+ Nutella",add:15},{label:"+ Oreo molida",add:10}] },
-      { id:"p4", name:"Frutas de Temporada", emoji:"🍉", desc:"Mix de frutas frescas con chilito, limón y sal. Refrescante y sano.", price:40, extras:[{label:"Vaso mediano",add:0},{label:"Vaso grande (+$15)",add:15},{label:"Sin chile",add:0}] },
-      { id:"p5", name:"Cheesecake Zarzamora", emoji:"🫐", desc:"Cheesecake horneado con coulis de zarzamora. Suave y cremoso.", price:65, extras:[{label:"Sin extras",add:0},{label:"+ Salsa extra",add:10},{label:"+ Frutos del bosque",add:15}] },
-      { id:"p6", name:"Frappe", emoji:"🧋", desc:"Bebida fría cremosa disponible en sabores: moka, caramelo, oreo o fresa.", price:58, extras:[{label:"Moka",add:0},{label:"Caramelo",add:0},{label:"Oreo (+$5)",add:5},{label:"Fresa",add:0},{label:"Tamaño grande (+$15)",add:15}] },
-      { id:"p7", name:"Waffle", emoji:"🧇", desc:"Waffle crocante con frutos rojos, crema chantilly y miel de maple.", price:70, extras:[{label:"Clásico",add:0},{label:"+ Nutella",add:12},{label:"+ Helado de vainilla",add:18},{label:"Combo completo (+$25)",add:25}] }
+      { id:"p1",  name:"Choco Flan",              emoji:"🍮", desc:"La combinación perfecta: pastel de chocolate con flan.",                                   price:55, extras:[] },
+      { id:"p2",  name:"Flan Napolitano",          emoji:"🍮", desc:"Flan napolitano clásico.",                                                                   price:50, extras:[] },
+      { id:"p3",  name:"Fresas con Crema",         emoji:"🍓", desc:"Fresas naturales con crema. Elige tu presentación.",                                         price:35, extras:[{label:"Vaso — $35",add:0},{label:"Charola — $45",add:10}] },
+      { id:"p4",  name:"Frutas con Crema",         emoji:"🍉", desc:"Mix de frutas con crema. Elige tu presentación.",                                            price:35, extras:[{label:"Vaso — $35",add:0},{label:"Charola — $45",add:10}] },
+      { id:"p5",  name:"Cheesecake Zarzamora",     emoji:"🫐", desc:"Cheesecake con coulis de zarzamora. Suave y cremoso.",                                       price:65, extras:[] },
+      { id:"p6",  name:"Minihotcakes Normal",      emoji:"🥞", desc:"Minihotcakes esponjosos.",                                                                    price:35, extras:[] },
+      { id:"p7",  name:"Minihotcakes con Fruta",   emoji:"🥞", desc:"Minihotcakes esponjosos con fruta a elegir.",                                                 price:50, extras:[{label:"Fresa",add:0},{label:"Durazno",add:0},{label:"Kiwi",add:0},{label:"Uva verde",add:0},{label:"Uva morada",add:0},{label:"Plátano",add:0}] },
+      { id:"p8",  name:"Hotcakes con Fruta",       emoji:"🥞", desc:"Hotcakes con fruta a elegir.",                                                                price:55, extras:[{label:"Fresa",add:0},{label:"Durazno",add:0},{label:"Kiwi",add:0},{label:"Uva verde",add:0},{label:"Uva morada",add:0},{label:"Plátano",add:0}] },
+      { id:"p9",  name:"Pastel Rebanada Grande",   emoji:"🎂", desc:"Rebanada grande de pastel.",                                                                  price:75, extras:[] },
+      { id:"p10", name:"Frappe Chico",             emoji:"🧋", desc:"Frappe frío y cremoso. Elige tu sabor.",                                                      price:50, extras:[{label:"Capuccino",add:0},{label:"Oreo",add:0},{label:"Chocorrol",add:0},{label:"Mamut",add:0},{label:"Gansito",add:0},{label:"Pinguino",add:0},{label:"Bubulubu",add:0},{label:"Carlos V",add:0},{label:"Kitkat",add:0},{label:"Kinder Bueno",add:0},{label:"Netella",add:0},{label:"Ferrero",add:0},{label:"Milky Way",add:0},{label:"Turin",add:0},{label:"Snickers",add:0},{label:"Hershey",add:0},{label:"Crunch",add:0},{label:"Larin",add:0},{label:"Kinder Delice",add:0},{label:"Vainilla",add:0},{label:"Chocoretas",add:0}] },
+      { id:"p11", name:"Frappe Grande",            emoji:"🧋", desc:"Frappe frío y cremoso en tamaño grande. Elige tu sabor.",                                     price:70, extras:[{label:"Capuccino",add:0},{label:"Oreo",add:0},{label:"Chocorrol",add:0},{label:"Mamut",add:0},{label:"Gansito",add:0},{label:"Pinguino",add:0},{label:"Bubulubu",add:0},{label:"Carlos V",add:0},{label:"Kitkat",add:0},{label:"Kinder Bueno",add:0},{label:"Netella",add:0},{label:"Ferrero",add:0},{label:"Milky Way",add:0},{label:"Turin",add:0},{label:"Snickers",add:0},{label:"Hershey",add:0},{label:"Crunch",add:0},{label:"Larin",add:0},{label:"Kinder Delice",add:0},{label:"Vainilla",add:0},{label:"Chocoretas",add:0}] },
+      { id:"p12", name:"Frappe Especial",          emoji:"🌟", desc:"Frappe especial con 2 ingredientes a elegir. ¡Elige tus 2 favoritos!",                        price:100, multi:[{label:"Capuccino"},{label:"Oreo"},{label:"Chocorrol"},{label:"Mamut"},{label:"Gansito"},{label:"Pinguino"},{label:"Bubulubu"},{label:"Carlos V"},{label:"Kitkat"},{label:"Kinder Bueno"},{label:"Netella"},{label:"Ferrero"},{label:"Milky Way"},{label:"Turin"},{label:"Snickers"},{label:"Hershey"},{label:"Crunch"},{label:"Larin"},{label:"Kinder Delice"},{label:"Vainilla"},{label:"Chocoretas"}] },
+      { id:"p13", name:"Waffle Solo",              emoji:"🧇", desc:"Waffle crocante con crema y miel.",                                                           price:45, extras:[] },
+      { id:"p14", name:"Waffle con Fruta",         emoji:"🧇", desc:"Waffle crocante con fruta a elegir, crema y miel.",                                           price:65, extras:[{label:"Fresa",add:0},{label:"Durazno",add:0},{label:"Kiwi",add:0},{label:"Uva verde",add:0},{label:"Uva morada",add:0},{label:"Plátano",add:0}] }
     ]
   },
   fuertes: {
@@ -805,6 +813,20 @@ const menu = {
       { id:"f9", name:"Hamburguesa con Papas", emoji:"🍟", desc:"Hamburguesa con papas.", price:85, extras:[] },
       { id:"f10", name:"Hotdog", emoji:"🌭", desc:"Hotdog clásico.", price:35, extras:[] },
       { id:"f11", name:"Hotdog con Papas", emoji:"🌭", desc:"Hotdog con papas.", price:55, extras:[] }
+    ]
+  },
+  desayunos: {
+    label: "Desayunos", emoji: "🍳", subtitle: "Con el sabor de casa",
+    items: [
+      { id:"d1", name:"Chilaquiles Normales",         emoji:"🫔", desc:"Chilaquiles al gusto. Puedes agregar huevo (+$15) o carne (+$20).",           price:35,  extras:[{label:"Solo — $35",add:0},{label:"+ Huevo (+$15)",add:15},{label:"+ Carne (+$20)",add:20}] },
+      { id:"d2", name:"Chilaquiles con Huevo y Carne",emoji:"🫔", desc:"Chilaquiles completos con huevo y carne incluidos.",                           price:70,  extras:[] },
+      { id:"d3", name:"Ensalada Normal con Fruta",    emoji:"🥗", desc:"Ensalada fresca con fruta. Elige tus ingredientes.",                           price:35,  multi:[{label:"Lechuga"},{label:"Pepinos"},{label:"Zanahoria"},{label:"Jícama"},{label:"Manzana"},{label:"Fresa"},{label:"Uva"}] },
+      { id:"d4", name:"Ensalada con Carne y Huevo",   emoji:"🥗", desc:"Ensalada completa. Elige tu proteína.",                                        price:65,  extras:[{label:"Bistec de puerco",add:0},{label:"Milaneza de pollo empanizada",add:0},{label:"Milaneza de pollo asada",add:0},{label:"Huevo estrella",add:0},{label:"Huevo hervido",add:0},{label:"Pollo deshebrado",add:0},{label:"Atún",add:0}] },
+      { id:"d5", name:"Ensalada para Compartir",      emoji:"🥗", desc:"Ensalada grande para compartir.",                                              price:110, extras:[] },
+      { id:"d6", name:"Jugo de Naranja",              emoji:"🍊", desc:"Jugo de naranja natural.",                                                     price:30,  extras:[{label:"Vaso — $30",add:0},{label:"1 litro — $60",add:30}] },
+      { id:"d7", name:"Licuado",                      emoji:"🥛", desc:"Licuado natural.",                                                             price:30,  extras:[{label:"Vaso — $30",add:0},{label:"1 litro — $60",add:30}] },
+      { id:"d8", name:"Sándwich",                     emoji:"🥪", desc:"Sándwich a elegir.",                                                           price:45,  extras:[{label:"Atún",add:0},{label:"Milaneza de pollo",add:0},{label:"Pollo deshebrado",add:0},{label:"Elote con atún",add:0}] },
+      { id:"d9", name:"Sincronizadas",                emoji:"🧀", desc:"Sincronizadas doradas y crujientes.",                                          price:40,  extras:[] }
     ]
   },
 };
