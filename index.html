@@ -208,6 +208,40 @@ body::before {
 }
 .extras-select:focus { outline: none; border-color: var(--orange); color: var(--text-main); }
 .extras-select option { background: var(--dark-2); }
+.notes-input {
+  background: var(--dark-3); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm); color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  padding: 7px 10px; width: 100%; margin-bottom: 12px;
+  resize: none; height: 52px; transition: var(--transition);
+  line-height: 1.5;
+}
+.notes-input::placeholder { color: rgba(154,143,132,0.55); }
+.notes-input:focus { outline: none; border-color: rgba(244,99,30,0.45); color: var(--text-main); }
+.notes-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+.quesillo-check-wrap {
+  display: flex; align-items: center; gap: 9px;
+  background: rgba(212,168,83,0.08); border: 1px solid rgba(212,168,83,0.2);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  margin-bottom: 10px; cursor: pointer; transition: var(--transition);
+}
+.quesillo-check-wrap:hover { background: rgba(212,168,83,0.14); border-color: rgba(212,168,83,0.4); }
+.quesillo-check-wrap input[type="checkbox"] { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+.quesillo-check-label { font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.quesillo-check-label strong { color: var(--gold); }
+.multi-check-wrap {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-bottom: 12px;
+}
+.multi-check-item {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(244,99,30,0.07); border: 1px solid rgba(244,99,30,0.18);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  font-size: 12px; color: var(--text-muted); transition: all 0.2s;
+}
+.multi-check-item:hover { background: rgba(244,99,30,0.14); border-color: rgba(244,99,30,0.35); }
+.multi-check-item input[type="checkbox"] { accent-color: var(--orange); width: 14px; height: 14px; cursor: pointer; }
+.multi-check-item:has(input:checked) { background: rgba(244,99,30,0.2); border-color: var(--orange); color: var(--text-main); }
 .btn-add {
   background: var(--orange); border: none; border-radius: 50px;
   color: white; font-family: 'DM Sans', sans-serif;
@@ -454,9 +488,53 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 </head>
 <body>
 
+<!-- ══ TICKET COCINA (oculto, solo para imprimir) ══ -->
+<div id="ticketCocina">
+  <div class="tk-header">
+    <div class="tk-logo">🌮 LA ANTOJERÍA</div>
+    <div class="tk-sub">TICKET DE COCINA</div>
+  </div>
+  <div class="tk-section">
+    <div class="tk-label">Folio</div>
+    <div class="tk-val" id="tk-folio">—</div>
+  </div>
+  <div class="tk-section">
+    <div class="tk-label">Hora</div>
+    <div class="tk-val" id="tk-hora">—</div>
+  </div>
+  <div class="tk-section">
+    <div class="tk-label">Tipo</div>
+    <div id="tk-tipo-badge" class="tk-type-badge">—</div>
+  </div>
+  <div class="tk-section" id="tk-mesa-row">
+    <div class="tk-label">Mesa</div>
+    <div class="tk-val" id="tk-mesa">—</div>
+  </div>
+  <div class="tk-section" id="tk-nombre-row">
+    <div class="tk-label">Cliente</div>
+    <div class="tk-val" id="tk-nombre">—</div>
+  </div>
+  <div class="tk-section" id="tk-tel-row">
+    <div class="tk-label">Teléfono</div>
+    <div class="tk-val" id="tk-tel">—</div>
+  </div>
+  <hr class="tk-divider">
+  <div id="tk-items"><!-- items --></div>
+  <div class="tk-total">
+    <span>TOTAL</span>
+    <span id="tk-total">$0</span>
+  </div>
+  <div class="tk-section" id="tk-address-row" style="display:none">
+    <div class="tk-label">📍 Dirección de entrega</div>
+    <div class="tk-address" id="tk-address-text">—</div>
+  </div>
+  <div class="tk-footer">
+    ¡Gracias por tu preferencia!<br>
+    <span id="tk-footer-extra"></span>
+  </div>
+</div>
 
-
-<!-- ══ PANTALLA<!-- ══ PANTALLA DE BIENVENIDA ══ -->
+<!-- ══ PANTALLA DE BIENVENIDA ══ -->
 <div id="welcomeScreen" style="position:fixed;inset:0;z-index:5000;background:#1A1A1A;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
   <div id="welcomeCard" style="background:#252525;border:1px solid rgba(244,99,30,.22);border-radius:26px;padding:36px 28px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6)">
     <div style="width:62px;height:62px;background:#F4631E;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px;box-shadow:0 0 28px rgba(244,99,30,.4)">🌮</div>
@@ -560,8 +638,7 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
   <div class="cat-scroll" id="catScroll">
     <button class="cat-pill active" data-cat="antojitos" onclick="filterCat(this)">🌮 Antojitos</button>
     <button class="cat-pill" data-cat="postres" onclick="filterCat(this)">🍰 Postres</button>
-    <button class="cat-pill" data-cat="fuertes" onclick="filterCat(this)">🍔 Fuertes</button>
-    <button class="cat-pill" data-cat="snacks" onclick="filterCat(this)">🍗 Snacks</button>
+    <button class="cat-pill" data-cat="fuertes" onclick="filterCat(this)">🍔 Tortas y más</button>
   </div>
 </nav>
 
@@ -642,16 +719,17 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 </div>
 
 
-<!-- MODAL TICKET CLIENTE -->
-<div class="tck-overlay" id="ticketClienteModal">
-  <div class="tck-modal">
-    <div class="tck-header">
-      <div class="tck-check">🌮</div>
-      <div class="tck-title">¡Pedido recibido!</div>
-      <div class="tck-sub">Gracias, ya estamos preparando tu orden</div>
+<!-- MODAL CONFIRMACIÓN PEDIDO MESA -->
+<div class="confirm-modal-overlay" id="confirmMesaModal">
+  <div class="confirm-modal">
+    <div class="confirm-check">✅</div>
+    <div class="confirm-title">¡Pedido enviado!</div>
+    <div class="confirm-sub" id="confirmMesaTxt">Tu pedido está en camino a cocina.</div>
+    <div class="confirm-time-box">
+      <div class="confirm-time-label">⏱ Tiempo estimado</div>
+      <div class="confirm-time-val" id="confirmMesaHora">Calculando…</div>
     </div>
-    <div id="ticketClienteBody"></div>
-    <button class="tck-close-btn" onclick="cerrarTicketCliente()">¡Entendido, gracias! 👍</button>
+    <button class="confirm-btn" onclick="cerrarConfirmMesa()">¡Entendido, gracias! 🌮</button>
   </div>
 </div>
 
@@ -662,8 +740,8 @@ body.modo-mesa .cart-overlay, body.modo-mesa .cart-drawer { display: none !impor
 // CONFIG
 // ══════════════════════════════════════════════
 const WA_NUMBER    = "522224613215"; // ← Cambia tu número
-const BASEROW_URL  = "https://api.baserow.io/api/database/rows/table/987412";
-const BASEROW_TOKEN= "KdAIw6tWK70RIOmSxXuyv86LAQDtsehO";
+const BASEROW_URL  = "https://api.baserow.io/api/database/rows/table/982867";
+const BASEROW_TOKEN= "LkiLblh7BT6mLA8PwTMzNt6WkcRYDqrZ";
 const TOTAL_MESAS  = 12;
 
 let cart          = [];
@@ -676,16 +754,29 @@ let gpsCoords     = null; // { lat, lng, url }
 // ══════════════════════════════════════════════
 // DATOS DEL MENÚ
 // ══════════════════════════════════════════════
+const RELLENOS = ["Tinga","Pollo adobado","Pollo solo","Champiñón","Picadillo","Papa con longaniza","Queso redondo","Quesillo"];
+const RELLENOS_OPTS = RELLENOS.map(r => ({label: r, add: 0}));
+
 const menu = {
   antojitos: {
     label: "Tu Antojito", emoji: "🌮", subtitle: "Los clásicos que nunca fallan",
     items: [
-      { id:"a1", name:"Molotes", emoji:"🫔", desc:"Rellenos de papa con chorizo, servidos con salsa verde y crema.", price:35, extras:[{label:"Sin extras",add:0},{label:"+ Salsa extra",add:5},{label:"+ Crema y queso",add:10},{label:"+ Todo incluido",add:15}] },
-      { id:"a2", name:"Pambazo", emoji:"🥖", desc:"Pan bañado en salsa guajillo, con chorizo y papa. ¡Irresistible!", price:38, extras:[{label:"Sin extras",add:0},{label:"+ Doble relleno",add:12},{label:"+ Aguacate",add:10}] },
-      { id:"a3", name:"Tacos Dorados", emoji:"🌯", desc:"Taquitos dorados de pollo o papa, con lechuga, crema y salsa.", price:42, extras:[{label:"De papa",add:0},{label:"De pollo (+$5)",add:5},{label:"Mixtos (+$5)",add:5},{label:"+ Guacamole",add:12}] },
-      { id:"a4", name:"Quesadilla", emoji:"🧀", desc:"Tortilla de maíz con quesillo Oaxaca fundido. Crocante por fuera, derretida por dentro.", price:30, extras:[{label:"Solo queso",add:0},{label:"+ Champiñones",add:8},{label:"+ Flor de calabaza",add:8},{label:"+ Chorizo",add:10}] },
-      { id:"a5", name:"Tostada", emoji:"🫓", desc:"Base crujiente con frijoles, pollo deshebrado, lechuga y crema.", price:28, extras:[{label:"Clásica",add:0},{label:"+ Aguacate",add:10},{label:"+ Extra pollo",add:12}] },
-      { id:"a6", name:"Chalupa", emoji:"⛵", desc:"Masa ovalada con salsa, carne deshebrada, cebolla y queso.", price:25, extras:[{label:"Con pollo",add:0},{label:"Con cerdo (+$5)",add:5},{label:"Vegetariana (-$3)",add:-3}] }
+      { id:"a1",  name:"Molotes",              emoji:"🫔", desc:"Elige tu relleno.", price:25, rellenos:true, extras:[...RELLENOS_OPTS] },
+      { id:"a2",  name:"Pambazo",              emoji:"🥖", desc:"Elige tu relleno.", price:35, rellenos:true, extras:[...RELLENOS_OPTS] },
+      { id:"a3",  name:"Tacos Dorados",        emoji:"🌯", desc:"Elige tu relleno.", price:10, rellenos:true, extras:[...RELLENOS_OPTS] },
+      { id:"a4",  name:"Quesadilla",           emoji:"🧀", desc:"Elige tu relleno.", price:35, rellenos:true, extras:[...RELLENOS_OPTS] },
+      { id:"a5",  name:"Tostada",              emoji:"🫓", desc:"Elige tu relleno.", price:25, rellenos:true, extras:[...RELLENOS_OPTS] },
+      { id:"a6",  name:"Chalupa",              emoji:"⛵", desc:"Sola o con pollo.", price:15, extras:[{label:"Sola — $15",add:0},{label:"Con pollo — $25",add:10}] },
+
+      { id:"a8",  name:"Alitas (6 pzas)",      emoji:"🍗", desc:"6 alitas crujientes. Elige tu salsa.", price:70, extras:[{label:"BBQ",add:0},{label:"Mango habanero",add:0},{label:"Salsa búfalo",add:0}] },
+      { id:"a9",  name:"Salchipulpos",         emoji:"🐙", desc:"Salchichas en forma de pulpo, crujientes y doradas.", price:45, extras:[{label:"Con cátsup y mostaza",add:0},{label:"+ Queso amarillo fundido",add:10}] },
+      { id:"a10", name:"Chicharrón Preparado", emoji:"🌶️", desc:"Chicharrón preparado a la orden.", price:30, extras:[{label:"Porción normal",add:0},{label:"Tamaño familiar",add:25}] },
+      { id:"a11", name:"Papas a la Francesa",  emoji:"🍟", desc:"Papas fritas crujientes.", price:40, extras:[{label:"Solas",add:0},{label:"Con aderezo",add:0}] },
+      { id:"a12", name:"Salchipapas",          emoji:"🌭", desc:"Papas fritas con salchicha.", price:45, extras:[{label:"Aderezo en charola",add:0},{label:"Aderezo aparte",add:0},{label:"Sin aderezo",add:0}] },
+      { id:"a13", name:"Plátano Frito",        emoji:"🍌", desc:"Plátano macho frito. Elige uno o varios acompañamientos.", price:40, multi:[{label:"Mermelada"},{label:"Lechera"},{label:"Chocolate líquido"},{label:"Avellana"},{label:"Chispas de chocolate"},{label:"Chispas de colores"}] },
+      { id:"a14", name:"Maruchan Normal",      emoji:"🍜", desc:"Elige sabor: habanero, piquín, pollo, res o camarón solo.", price:30, extras:[{label:"Habanero",add:0},{label:"Piquín",add:0},{label:"Pollo",add:0},{label:"Res",add:0},{label:"Camarón solo",add:0}] },
+      { id:"a15", name:"Maruchan Preparado",   emoji:"🍜", desc:"Maruchan preparado. Elige sabor.", price:40, extras:[{label:"Habanero",add:0},{label:"Piquín",add:0},{label:"Pollo",add:0},{label:"Res",add:0},{label:"Camarón solo",add:0}] },
+      { id:"a16", name:"Café y Té",            emoji:"☕", desc:"Café o té caliente.", price:15, extras:[{label:"Café",add:0},{label:"Té",add:0}] }
     ]
   },
   postres: {
@@ -701,24 +792,21 @@ const menu = {
     ]
   },
   fuertes: {
-    label: "Fuertes", emoji: "🍔", subtitle: "Para el hambre de verdad",
+    label: "Tortas, Hamburguesas y Hotdogs", emoji: "🍔", subtitle: "Para el hambre de verdad",
     items: [
-      { id:"f1", name:"Torta Chica", emoji:"🥙", desc:"Pan telera con jamón, queso, aguacate, jitomate y mayonesa.", price:55, extras:[{label:"Clásica",add:0},{label:"+ Milanesa",add:20},{label:"+ Huevo",add:10}] },
-      { id:"f2", name:"Torta Grande", emoji:"🥪", desc:"Torta XL con doble relleno, extra queso y todas las guarniciones.", price:75, extras:[{label:"Clásica",add:0},{label:"Hawaiana (piña) (+$10)",add:10},{label:"Cubana (todo incluido) (+$20)",add:20}] },
-      { id:"f3", name:"Hamburguesa", emoji:"🍔", desc:"Carne 100% res, con lechuga, jitomate, cebolla, pepinillo y cátsup.", price:85, extras:[{label:"Sencilla (sin papas)",add:0},{label:"+ Papas a la francesa",add:20},{label:"+ Doble carne",add:25},{label:"Combo completo (+$35)",add:35}] },
-      { id:"f4", name:"Hot Dog", emoji:"🌭", desc:"Salchicha jumbo en pan tostado, con cebolla, pico de gallo y mostaza.", price:55, extras:[{label:"Sencillo",add:0},{label:"+ Tocino",add:15},{label:"+ Queso fundido",add:10},{label:"Combo con refresco (+$20)",add:20}] }
+      { id:"f1", name:"Torta Chica", opciones:true, emoji:"🥙", desc:"Milanesa de pollo, milanesa de puerco, chorizo con huevo, longaniza con huevo, pierna o salchicha.", price:45, extras:[{label:"Milanesa de pollo",add:0},{label:"Milanesa de puerco",add:0},{label:"Chorizo con huevo",add:0},{label:"Longaniza con huevo",add:0},{label:"Pierna",add:0},{label:"Salchicha",add:0}] },
+      { id:"f2", name:"Torta Grande", opciones:true, emoji:"🥪", desc:"Milanesa de pollo, milanesa de puerco, chorizo con huevo, longaniza con huevo, pierna o salchicha.", price:80, extras:[{label:"Milanesa de pollo",add:0},{label:"Milanesa de puerco",add:0},{label:"Chorizo con huevo",add:0},{label:"Longaniza con huevo",add:0},{label:"Pierna",add:0},{label:"Salchicha",add:0}] },
+      { id:"f3", name:"Torta Hawaiana Chica", emoji:"🍍", desc:"Torta hawaiana chica.", price:60, extras:[] },
+      { id:"f4", name:"Torta Hawaiana Grande", emoji:"🍍", desc:"Torta hawaiana grande.", price:100, extras:[] },
+      { id:"f5", name:"Torta Cubana", emoji:"🥖", desc:"Torta cubana.", price:100, extras:[] },
+      { id:"f6", name:"Hamburguesa Hawaiana", emoji:"🍔", desc:"Hamburguesa hawaiana.", price:85, extras:[] },
+      { id:"f7", name:"Hamburguesa Hawaiana con Papas", emoji:"🍔", desc:"Hamburguesa hawaiana con papas.", price:100, extras:[] },
+      { id:"f8", name:"Hamburguesa", emoji:"🍔", desc:"Hamburguesa clásica.", price:65, extras:[] },
+      { id:"f9", name:"Hamburguesa con Papas", emoji:"🍟", desc:"Hamburguesa con papas.", price:85, extras:[] },
+      { id:"f10", name:"Hotdog", emoji:"🌭", desc:"Hotdog clásico.", price:35, extras:[] },
+      { id:"f11", name:"Hotdog con Papas", emoji:"🌭", desc:"Hotdog con papas.", price:55, extras:[] }
     ]
   },
-  snacks: {
-    label: "Snacks", emoji: "🍗", subtitle: "Para botanearte a gusto",
-    items: [
-      { id:"s1", name:"Alitas", emoji:"🍗", desc:"Alitas crujientes en salsa BBQ, búfalo o mango habanero.", price:95, extras:[{label:"BBQ (6 pzas)",add:0},{label:"Búfalo (6 pzas)",add:0},{label:"Mango habanero (6 pzas)",add:0},{label:"12 piezas (+$80)",add:80}] },
-      { id:"s2", name:"Plátanos Fritos", emoji:"🍌", desc:"Plátano macho frito con crema, queso y cajeta. Dulce y salado.", price:40, extras:[{label:"Sin extras",add:0},{label:"+ Cajeta extra",add:8},{label:"+ Nutella",add:12}] },
-      { id:"s3", name:"Salchipulpos", emoji:"🐙", desc:"Salchichas en forma de pulpo, crujientes y doradas.", price:38, extras:[{label:"Con cátsup y mostaza",add:0},{label:"+ Queso amarillo fundido",add:10},{label:"Porción doble (+$20)",add:20}] },
-      { id:"s4", name:"Chicharrones Preparados", emoji:"🌶️", desc:"Chicharrón con cueritos, jícama, pepino, cebolla y salsa valentina.", price:45, extras:[{label:"Picante normal",add:0},{label:"Extra picante (+$0)",add:0},{label:"+ Aguacate",add:12},{label:"Tamaño familiar (+$25)",add:25}] },
-      { id:"s5", name:"Papas a la Francesa", emoji:"🍟", desc:"Papas fritas crujientes con sal de grano.", price:35, extras:[{label:"Solas",add:0},{label:"+ Queso cheddar",add:10},{label:"+ Tocino bits",add:10},{label:"Cargadas (+$20)",add:20}] }
-    ]
-  }
 };
 
 // ══════════════════════════════════════════════
@@ -734,11 +822,40 @@ function renderSection(catKey) {
   const grid = document.getElementById("productsGrid");
   grid.innerHTML = "";
   cat.items.forEach((item, idx) => {
-    const hasExtras = item.extras && item.extras.length > 0;
-    const extrasHTML = hasExtras ? `
-      <select class="extras-select" id="extra-${item.id}" onchange="updateCardPrice('${item.id}', ${item.price})">
-        ${item.extras.map(e => `<option value="${e.add}">${e.label}</option>`).join("")}
-      </select>` : "";
+    let extrasHTML = "";
+    if (item.multi && item.multi.length > 0) {
+      extrasHTML = `
+        <span class="notes-label">🍌 Elige tu acompañamiento (puedes elegir varios)</span>
+        <div class="multi-check-wrap" id="extra-${item.id}">
+          ${item.multi.map((e,i) => `
+            <label class="multi-check-item">
+              <input type="checkbox" value="${e.label}" class="multi-cb">
+              <span>${e.label}</span>
+            </label>`).join("")}
+        </div>`;
+    } else if (item.rellenos && item.extras && item.extras.length > 0) {
+      extrasHTML = `
+        <span class="notes-label">🫔 Elige tu relleno</span>
+        <select class="extras-select" id="extra-${item.id}">
+          ${item.extras.map(e => `<option value="${e.label}">${e.label}</option>`).join("")}
+        </select>
+        <label class="quesillo-check-wrap">
+          <input type="checkbox" id="quesillo-${item.id}">
+          <span class="quesillo-check-label">🧀 + Quesillo extra <strong>$5</strong></span>
+        </label>`;
+    } else if (item.opciones && item.extras && item.extras.length > 0) {
+      extrasHTML = `
+        <span class="notes-label">🥙 Elige tu opción</span>
+        <select class="extras-select" id="extra-${item.id}">
+          ${item.extras.map(e => `<option value="${e.label}">${e.label}</option>`).join("")}
+        </select>`;
+    } else if (item.extras && item.extras.length > 0) {
+      extrasHTML = `
+        <select class="extras-select" id="extra-${item.id}" onchange="updateCardPriceNormal('${item.id}', ${item.price})">
+          ${item.extras.map(e => `<option value="${e.add}">${e.label}</option>`).join("")}
+        </select>`;
+    }
+
     const card = document.createElement("div");
     card.className = "product-card";
     card.style.animationDelay = `${idx * 0.07}s`;
@@ -751,6 +868,8 @@ function renderSection(catKey) {
         <div class="card-title">${item.name}</div>
         <div class="card-desc">${item.desc}</div>
         ${extrasHTML}
+        <span class="notes-label">✏️ Indicaciones especiales</span>
+        <textarea class="notes-input" id="notes-${item.id}" placeholder="Ej: sin salsa, sin cebolla, extra picante…"></textarea>
         <div class="card-footer-row">
           <div class="price-wrap">
             <div class="price-label">Precio</div>
@@ -766,9 +885,55 @@ function renderSection(catKey) {
 }
 
 function updateCardPrice(itemId, basePrice) {
+  const cb = document.getElementById(`quesillo-${itemId}`);
+  const add = (cb && cb.checked) ? 5 : 0;
+  document.getElementById(`price-${itemId}`).textContent = `$${basePrice + add}`;
+}
+
+function updateCardPriceNormal(itemId, basePrice) {
   const sel = document.getElementById(`extra-${itemId}`);
   const add = parseFloat(sel.value) || 0;
   document.getElementById(`price-${itemId}`).textContent = `$${basePrice + add}`;
+}
+
+function addToCart(catKey, itemId) {
+  const item = menu[catKey].items.find(i => i.id === itemId);
+  if (!item) return;
+  const selEl = document.getElementById(`extra-${itemId}`);
+  const notesEl = document.getElementById(`notes-${itemId}`);
+  const notes = notesEl ? notesEl.value.trim() : "";
+
+  let extraLabel = "";
+  let extraAdd = 0;
+
+  if (item.multi) {
+    const wrap = document.getElementById(`extra-${itemId}`);
+    const checked = wrap ? [...wrap.querySelectorAll('.multi-cb:checked')].map(c => c.value) : [];
+    extraLabel = checked.length > 0 ? checked.join(", ") : "Sin acompañamiento";
+    extraAdd = 0;
+  } else if (item.rellenos) {
+    const relleno = selEl ? selEl.value : "";
+    const quesilloEl = document.getElementById(`quesillo-${itemId}`);
+    const conQuesillo = quesilloEl && quesilloEl.checked;
+    extraAdd = conQuesillo ? 5 : 0;
+    const parts = [relleno];
+    if (conQuesillo) parts.push("+ Quesillo extra");
+    extraLabel = parts.join(" · ");
+  } else if (item.opciones) {
+    extraLabel = selEl ? selEl.value : "";
+    extraAdd = 0;
+  } else if (selEl) {
+    extraAdd = parseFloat(selEl.value) || 0;
+    extraLabel = selEl.options[selEl.selectedIndex].text;
+  }
+
+  const finalPrice = item.price + extraAdd;
+  const cartKey = `${itemId}__${extraLabel}__${notes}`;
+  const existing = cart.find(c => c.cartKey === cartKey);
+  if (existing) { existing.qty++; }
+  else { cart.push({ cartKey, id: itemId, name: item.name, emoji: item.emoji, price: finalPrice, extraLabel, notes, qty: 1 }); }
+  updateCartUI();
+  showToast(`${item.emoji} ${item.name} añadido al carrito`);
 }
 
 function filterCat(btn) {
@@ -791,13 +956,25 @@ function addToCart(catKey, itemId) {
   const item = menu[catKey].items.find(i => i.id === itemId);
   if (!item) return;
   const selEl = document.getElementById(`extra-${itemId}`);
-  const extraAdd = selEl ? parseFloat(selEl.value) || 0 : 0;
-  const extraLabel = selEl ? selEl.options[selEl.selectedIndex].text : "";
-  const finalPrice = item.price + extraAdd;
-  const cartKey = `${itemId}__${extraAdd}`;
+  const quesilloEl = document.getElementById(`quesillo-${itemId}`);
+  const notesEl = document.getElementById(`notes-${itemId}`);
+
+  const relleno = selEl ? selEl.value : "";
+  const conQuesillo = quesilloEl && quesilloEl.checked;
+  const quesilloAdd = conQuesillo ? 5 : 0;
+  const notes = notesEl ? notesEl.value.trim() : "";
+  const finalPrice = item.price + quesilloAdd;
+
+  // Armar etiqueta de extras
+  const extraParts = [];
+  if (relleno) extraParts.push(relleno);
+  if (conQuesillo) extraParts.push("+ Quesillo extra");
+  const extraLabel = extraParts.join(" · ");
+
+  const cartKey = `${itemId}__${relleno}__${quesilloAdd}__${notes}`;
   const existing = cart.find(c => c.cartKey === cartKey);
   if (existing) { existing.qty++; }
-  else { cart.push({ cartKey, id: itemId, name: item.name, emoji: item.emoji, price: finalPrice, extraLabel: extraAdd > 0 ? extraLabel : "", qty: 1 }); }
+  else { cart.push({ cartKey, id: itemId, name: item.name, emoji: item.emoji, price: finalPrice, extraLabel, notes, qty: 1 }); }
   updateCartUI();
   showToast(`${item.emoji} ${item.name} añadido al carrito`);
 }
@@ -840,6 +1017,7 @@ function renderCartItems() {
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
         ${item.extraLabel ? `<div class="cart-item-extra">➕ ${item.extraLabel}</div>` : ""}
+        ${item.notes ? `<div class="cart-item-extra" style="color:var(--text-muted)">📝 ${item.notes}</div>` : ""}
         <div class="cart-item-controls">
           <button class="qty-btn" onclick="changeQty('${item.cartKey}',-1)">−</button>
           <span class="qty-val">${item.qty}</span>
@@ -883,7 +1061,7 @@ function obtenerUbicacion() {
     pos => {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
-      const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
       gpsCoords = { lat, lng, url: mapsUrl };
 
       gpsText.innerHTML = `📍 Ubicación capturada &nbsp;<a href="${mapsUrl}" target="_blank" style="color:#25D366;font-size:11px;text-decoration:underline">Ver en mapa ↗</a>`;
@@ -1032,54 +1210,65 @@ async function saveOrderToStorage(type, mesa = null, telefono = "", address = ""
 // ══════════════════════════════════════════════
 // TICKET DE COCINA
 // ══════════════════════════════════════════════
-function mostrarTicketCliente(orderData, colaInfo) {
-  const now   = new Date();
-  const hora  = now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+function imprimirTicket(orderData) {
+  const now = new Date();
+  const hora = now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   const fecha = now.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const folio = (orderData.order_id || "ORD-" + Date.now()).slice(-6).toUpperCase();
 
-  const items = typeof orderData.items === "string" ? JSON.parse(orderData.items) : orderData.items;
-  const itemsHTML = items.map(item => `
-    <div class="tck-item">
-      <span class="tck-item-emoji">${item.emoji || "🍽️"}</span>
-      <span class="tck-item-name">${item.name}${item.extraLabel ? `<small> · ${item.extraLabel}</small>` : ""}</span>
-      <span class="tck-item-qty">×${item.qty}</span>
-      <span class="tck-item-price">$${item.price * item.qty}</span>
-    </div>`).join("");
+  document.getElementById("tk-folio").textContent = orderData.order_id || ("ORD-" + Date.now());
+  document.getElementById("tk-hora").textContent = `${fecha} ${hora}`;
 
-  const esDomicilio = orderData.type === "whatsapp";
-  const infoExtra = esDomicilio
-    ? `<div class="tck-info-row"><i class="bi bi-whatsapp"></i> Pedido por WhatsApp · Domicilio</div>`
-    : `<div class="tck-info-row"><i class="bi bi-geo-alt-fill"></i> Mesa ${orderData.mesa} · ${orderData.nombre || ""}</div>`;
+  const tipo = orderData.type === "local" ? "MESA LOCAL" : "DOMICILIO / WA";
+  document.getElementById("tk-tipo-badge").textContent = tipo;
 
-  let tiempoHTML = "";
-  if (colaInfo) {
-    const msg = colaInfo.pedidosEnCola === 0
-      ? `¡Tu pedido es el primero! Ya estamos en ello 🔥`
-      : `Hay ${colaInfo.pedidosEnCola} pedido${colaInfo.pedidosEnCola > 1 ? "s" : ""} antes que el tuyo`;
-    tiempoHTML = `
-      <div class="tck-time-box">
-        <div class="tck-time-label">⏱ Tiempo estimado</div>
-        <div class="tck-time-val">Listo aprox. a las ${colaInfo.hora} <small>(~${colaInfo.mins} min)</small></div>
-        <div class="tck-time-sub">${msg}</div>
-      </div>`;
+  const mesaRow = document.getElementById("tk-mesa-row");
+  const nombreRow = document.getElementById("tk-nombre-row");
+  const telRow = document.getElementById("tk-tel-row");
+  const addrRow = document.getElementById("tk-address-row");
+
+  if (orderData.type === "local") {
+    mesaRow.style.display = "block";
+    document.getElementById("tk-mesa").textContent = `Mesa ${orderData.mesa}`;
+    nombreRow.style.display = "block";
+    document.getElementById("tk-nombre").textContent = orderData.nombre || "—";
+    telRow.style.display = "none";
+    addrRow.style.display = "none";
+  } else {
+    mesaRow.style.display = "none";
+    nombreRow.style.display = "none";
+    telRow.style.display = orderData.telefono ? "block" : "none";
+    document.getElementById("tk-tel").textContent = orderData.telefono || "—";
+    if (orderData.address) {
+      addrRow.style.display = "block";
+      document.getElementById("tk-address-text").textContent = orderData.address;
+    } else { addrRow.style.display = "none"; }
   }
 
-  document.getElementById("ticketClienteBody").innerHTML = `
-    <div class="tck-folio">Folio #${folio} · ${hora}</div>
-    ${infoExtra}
-    <div class="tck-items">${itemsHTML}</div>
-    <div class="tck-total-row">
-      <span>Total</span>
-      <span class="tck-total-amt">$${orderData.total} <small>MXN</small></span>
-    </div>
-    ${tiempoHTML}`;
+  // Items
+  const itemsEl = document.getElementById("tk-items");
+  itemsEl.innerHTML = "";
+  const items = typeof orderData.items === "string" ? JSON.parse(orderData.items) : orderData.items;
+  items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "tk-item";
+    row.innerHTML = `
+      <span class="tk-item-qty">${item.qty}x</span>
+      <span class="tk-item-name">${item.name}${item.extraLabel ? ` (${item.extraLabel})` : ""}${item.notes ? ` — 📝 ${item.notes}` : ""}</span>
+      <span class="tk-item-price">$${item.price * item.qty}</span>`;
+    itemsEl.appendChild(row);
+  });
 
-  document.getElementById("ticketClienteModal").classList.add("open");
-}
+  document.getElementById("tk-total").textContent = `$${orderData.total} MXN`;
 
-function cerrarTicketCliente() {
-  document.getElementById("ticketClienteModal").classList.remove("open");
+  const footerExtra = orderData.type === "whatsapp"
+    ? `Pedido a domicilio — confirmar por WA`
+    : `Pedido local · ${fecha}`;
+  document.getElementById("tk-footer-extra").textContent = footerExtra;
+
+  // Show ticket and print
+  document.getElementById("ticketCocina").style.display = "block";
+  setTimeout(() => { window.print(); }, 150);
+  setTimeout(() => { document.getElementById("ticketCocina").style.display = "none"; }, 2500);
 }
 
 // ══════════════════════════════════════════════
@@ -1139,7 +1328,8 @@ async function sendWhatsApp() {
 
   const lines = cart.map(c => {
     const extra = c.extraLabel ? ` (${c.extraLabel})` : "";
-    return `• ${c.qty}x ${c.name}${extra} — $${c.price * c.qty}`;
+    const nota = c.notes ? ` — 📝 ${c.notes}` : "";
+    return `• ${c.qty}x ${c.name}${extra}${nota} — $${c.price * c.qty}`;
   });
   const total = getTotal();
 
@@ -1165,19 +1355,23 @@ async function sendWhatsApp() {
   const url = `https://wa.me/${WA_NUMBER}?text=${encoded}`;
   window.open(url, "_blank");
 
-  // Guardar en Baserow
+  // Guardar en Baserow y generar ticket
   const orderData = await saveOrderToStorage("whatsapp", null, telefono, address);
   orderData.items = cart.map(c => ({ ...c }));
 
-  // Limpiar carrito y mostrar confirmación visual al cliente
-  cart = []; gpsCoords = null;
-  document.getElementById("gpsResult").classList.remove("show");
-  document.getElementById("btnGPS").innerHTML = `<i class="bi bi-geo-fill"></i> Usar mi ubicación GPS`;
-  document.getElementById("btnGPS").classList.remove("got-location");
-  document.getElementById("gpsText").innerHTML = "Ubicación capturada";
-  ["addrCalle","addrColonia","addrReferencia","addrNotas"].forEach(id => { document.getElementById(id).value = ""; });
-  updateCartUI(); renderCartItems(); toggleCart();
-  mostrarTicketCliente(orderData, colaInfo);
+  // Imprimir ticket de cocina
+  setTimeout(() => imprimirTicket(orderData), 400);
+
+  setTimeout(() => {
+    cart = []; gpsCoords = null;
+    document.getElementById("gpsResult").classList.remove("show");
+    document.getElementById("btnGPS").innerHTML = `<i class="bi bi-geo-fill"></i> Usar mi ubicación GPS`;
+    document.getElementById("btnGPS").classList.remove("got-location");
+    document.getElementById("gpsText").innerHTML = "Ubicación capturada";
+    ["addrCalle","addrColonia","addrReferencia","addrNotas"].forEach(id => { document.getElementById(id).value = ""; });
+    updateCartUI(); renderCartItems(); toggleCart();
+    showToast("✅ ¡Pedido enviado! El carrito fue limpiado.");
+  }, 800);
 }
 
 // ══════════════════════════════════════════════
@@ -1194,19 +1388,38 @@ async function ordenarEnMesa() {
   orderData.nombre = nombreCliente;
   orderData.items = cart.map(c => ({ ...c }));
 
+  // Imprimir ticket de cocina
+  setTimeout(() => imprimirTicket(orderData), 300);
+
   cart = []; updateCartUI(); renderCartItems(); toggleCart();
 
-  // Mostrar confirmación visual al cliente
-  mostrarTicketCliente(orderData, colaInfo);
+  // Mostrar modal de confirmación con tiempo estimado
+  mostrarConfirmacionMesa(colaInfo);
 }
 
 
 // ══════════════════════════════════════════════
 // MODAL CONFIRMACIÓN MESA
 // ══════════════════════════════════════════════
+function mostrarConfirmacionMesa(colaInfo) {
+  const modal = document.getElementById("confirmMesaModal");
+  const txt   = document.getElementById("confirmMesaTxt");
+  const hora  = document.getElementById("confirmMesaHora");
 
+  if (colaInfo.pedidosEnCola === 0) {
+    txt.textContent = "¡Tu pedido es el primero en cola! Ya estamos preparándolo.";
+  } else if (colaInfo.pedidosEnCola === 1) {
+    txt.textContent = "Hay 1 pedido antes que el tuyo. ¡Pronto será tu turno!";
+  } else {
+    txt.textContent = `Hay ${colaInfo.pedidosEnCola} pedidos antes que el tuyo. ¡No tardamos!`;
+  }
+  hora.textContent = `Tu pedido estará listo aprox. a las ${colaInfo.hora} (~${colaInfo.mins} min)`;
+  modal.classList.add("open");
+}
 
-
+function cerrarConfirmMesa() {
+  document.getElementById("confirmMesaModal").classList.remove("open");
+}
 // ══════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════
@@ -1229,95 +1442,56 @@ renderSection("antojitos");
 <style>
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* ── MODAL TICKET CLIENTE ── */
-.tck-overlay {
+/* ── MODAL CONFIRMACIÓN PEDIDO ── */
+.confirm-modal-overlay {
   position: fixed; inset: 0; z-index: 6000;
-  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center;
-  padding: 16px; overflow-y: auto;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
 }
-.tck-overlay.open { display: flex; }
-.tck-modal {
-  background: #1E1E1E; border: 1px solid rgba(244,99,30,0.2);
-  border-radius: 26px; padding: 0;
-  width: 100%; max-width: 400px;
-  box-shadow: 0 28px 80px rgba(0,0,0,0.8);
-  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-  overflow: hidden;
+.confirm-modal-overlay.open { display: flex; }
+.confirm-modal {
+  background: #252525; border: 1px solid rgba(244,99,30,0.25);
+  border-radius: 24px; padding: 32px 28px 28px;
+  width: 100%; max-width: 380px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 @keyframes popIn {
-  from { opacity:0; transform: scale(0.88) translateY(24px); }
+  from { opacity:0; transform: scale(0.85) translateY(20px); }
   to   { opacity:1; transform: scale(1) translateY(0); }
 }
-.tck-header {
-  background: linear-gradient(135deg, rgba(244,99,30,0.18) 0%, rgba(244,99,30,0.06) 100%);
-  border-bottom: 1px solid rgba(244,99,30,0.15);
-  padding: 28px 24px 20px; text-align: center;
+.confirm-check {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: rgba(46,204,113,0.15); border: 2px solid rgba(46,204,113,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 18px;
 }
-.tck-check {
-  font-size: 48px; margin-bottom: 10px; display: block;
-  animation: bounceIn 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+.confirm-title {
+  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900;
+  color: #F0EBE3; margin-bottom: 8px;
 }
-@keyframes bounceIn { from{opacity:0;transform:scale(0.4)} to{opacity:1;transform:scale(1)} }
-.tck-title {
-  font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900;
-  color: #F0EBE3; margin-bottom: 4px;
+.confirm-sub {
+  font-size: 14px; color: #9A8F84; line-height: 1.6; margin-bottom: 16px;
 }
-.tck-sub { font-size: 13px; color: #9A8F84; }
-/* Body */
-.tck-folio { font-size: 11px; color: #9A8F84; letter-spacing: 1px; padding: 12px 20px 0; }
-.tck-info-row {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 12px; font-weight: 600; color: #FF8C4B;
-  padding: 6px 20px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+.confirm-time-box {
+  background: rgba(244,99,30,0.1); border: 1px solid rgba(244,99,30,0.25);
+  border-radius: 14px; padding: 14px 18px; margin-bottom: 22px;
 }
-/* Items */
-.tck-items { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.tck-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 0; font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.tck-item:last-child { border-bottom: none; }
-.tck-item-emoji { font-size: 18px; flex-shrink: 0; }
-.tck-item-name { flex: 1; color: #F0EBE3; font-weight: 500; }
-.tck-item-name small { color: #FF8C4B; font-size: 11px; display: block; margin-top: 1px; }
-.tck-item-qty { font-size: 11px; font-weight: 700; color: #9A8F84; background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
-.tck-item-price { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #F4631E; flex-shrink: 0; }
-/* Total */
-.tck-total-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 13px; color: #9A8F84; font-weight: 500;
-}
-.tck-total-amt {
-  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: #F0EBE3;
-}
-.tck-total-amt small { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #9A8F84; font-weight: 400; }
-/* Tiempo */
-.tck-time-box {
-  margin: 14px 20px; background: rgba(244,99,30,0.08);
-  border: 1px solid rgba(244,99,30,0.2); border-radius: 14px; padding: 14px 16px;
-}
-.tck-time-label {
+.confirm-time-label {
   font-size: 10px; color: #FF8C4B; letter-spacing: 2px;
-  text-transform: uppercase; font-weight: 700; margin-bottom: 5px;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 6px;
 }
-.tck-time-val {
-  font-family: 'Playfair Display', serif; font-size: 18px;
-  font-weight: 700; color: #F0EBE3; line-height: 1.3;
+.confirm-time-val {
+  font-family: 'Playfair Display', serif; font-size: 17px;
+  font-weight: 700; color: #F0EBE3; line-height: 1.4;
 }
-.tck-time-val small { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #9A8F84; font-weight: 400; }
-.tck-time-sub { font-size: 12px; color: #9A8F84; margin-top: 4px; }
-/* Botón cerrar */
-.tck-close-btn {
-  display: block; width: calc(100% - 40px); margin: 0 20px 20px;
-  background: #F4631E; border: none; border-radius: 14px;
+.confirm-btn {
+  width: 100%; background: #F4631E; border: none; border-radius: 14px;
   color: white; font-family: 'DM Sans', sans-serif;
   font-size: 15px; font-weight: 700; padding: 14px;
   cursor: pointer; transition: all 0.2s;
 }
-.tck-close-btn:hover { background: #FF8C4B; transform: translateY(-1px); }
+.confirm-btn:hover { background: #FF8C4B; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
