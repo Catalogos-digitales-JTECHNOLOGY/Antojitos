@@ -543,19 +543,30 @@ function buildCard(order, delay) {
   let addressHTML = "";
   if (order.type === "whatsapp" && order.address) {
     // Extraer link de GPS si existe
-    const gpsMatch = order.address.match(/(https?:\/\/maps\.google[^\s|]+)/);
+    // Extraer cualquier URL de Google Maps del campo address
+    const gpsMatch = order.address.match(/(https?:\/\/[^\s|]+)/);
     const gpsLink  = gpsMatch ? gpsMatch[1] : null;
-    const addrDisplay = order.address.replace(/GPS: https?:\/\/[^\s|]+/, "").replace(/\s*\|\s*$/, "").trim();
-
-    const mapsUrl = gpsLink || `https://maps.google.com/?q=${encodeURIComponent(addrDisplay)}`;
+    // Limpiar dirección: quitar la parte "GPS: url" y los pipes
+    const addrDisplay = order.address
+      .replace(/GPS:\s*https?:\/\/[^\s|]+/i, "")
+      .replace(/\s*\|\s*/g, ", ")
+      .replace(/,\s*$/, "")
+      .trim();
+    // Si hay URL de GPS úsala directamente, si no buscar la dirección en Maps
+    const mapsUrl = gpsLink
+      ? gpsLink
+      : addrDisplay
+        ? `https://maps.google.com/?q=${encodeURIComponent(addrDisplay)}`
+        : null;
+    const btnUbicacion = mapsUrl
+      ? `<a class="btn-ver-ubicacion" href="${mapsUrl}" target="_blank" rel="noopener"><i class="bi bi-geo-alt-fill"></i> Ver ubicación</a>`
+      : `<span class="btn-ver-ubicacion" style="opacity:0.38;cursor:not-allowed;pointer-events:none"><i class="bi bi-geo-alt"></i> Sin GPS</span>`;
     addressHTML = `
       <div class="order-address-row">
         <div class="order-address-text">
-          <span class="addr-icon">📍</span>${addrDisplay}
+          <span class="addr-icon">📍</span>${addrDisplay || "Sin dirección"}
         </div>
-        <a class="btn-ver-ubicacion" href="${mapsUrl}" target="_blank" rel="noopener">
-          <i class="bi bi-geo-alt-fill"></i> Ver ubicación
-        </a>
+        ${btnUbicacion}
       </div>`;
   }
 
