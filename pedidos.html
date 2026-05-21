@@ -507,10 +507,6 @@ function renderCol(colId, orders, filter) {
   filtered.forEach((order, i) => {
     const card = buildCard(order, i);
     col.appendChild(card);
-    // Generar QR después de insertar al DOM
-    if (order.type === "whatsapp" && order.address) {
-      generateQR(order.id, order.address);
-    }
   });
 }
 
